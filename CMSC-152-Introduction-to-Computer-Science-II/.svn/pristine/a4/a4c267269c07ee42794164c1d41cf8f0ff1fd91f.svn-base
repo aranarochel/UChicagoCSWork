@@ -1,0 +1,159 @@
+/* Graded lab5 */
+
+/* ====== Makefile ====== */
+
+gray: gray.c
+	gcc -Wall -o gray gray.c
+
+/* ====== gray.c ====== */
+
+/* Jaime Arana-Rochel, aranarochel */
+/* CS 152, WIN 13 */
+/* Lab 5 */
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef unsigned char byte;
+
+struct in_memory_ppm {
+  unsigned int w;
+  unsigned int h;
+  byte *reds;
+  byte *greens;
+  byte *blues;
+};
+
+typedef struct in_memory_ppm ppm;
+
+/* ppm_in : () -> ppm */
+/* builds a ppm data structure from a ppm file */
+ppm *ppm_in()
+{
+  scanf("P3\n");
+  ppm *new_ppm = (ppm*)malloc(sizeof(ppm));;
+  int w;
+  int h;
+  scanf("%d %d\n", &w, &h);
+  scanf("255\n");
+
+  byte *red = (byte*)malloc(w*h*sizeof(byte));
+  byte *green = (byte*)malloc(w*h*sizeof(byte));
+  byte *blue = (byte*)malloc(w*h*sizeof(byte));
+
+  int i;
+  for(i = 0; i < w*h ; i++) {
+    byte r, g, b;
+    int br, bg, bb;
+    scanf("%d %d %d\n",&br,&bg,&bb);
+    r = br;
+    g = bg;
+    b = bb;
+    
+    red[i] = r;
+    green[i] = g;
+    blue[i] = b;
+  }
+  new_ppm->w = w;
+  new_ppm->h = h;
+  new_ppm->reds = red;
+  new_ppm->greens = green;
+  new_ppm->blues = blue;
+  return new_ppm;
+}
+
+/* ppm_out : ppm -> <void> */
+/* given a ppm struct, writes a ppm file to standard out */
+void ppm_out(ppm *img)
+{
+  int i;
+
+  printf("P3\n");
+  printf("%u %u\n", img->w, img->h);
+  printf("255\n");
+
+  for(i = 0; i < img->w * img->h; i++) {
+    printf("%hhu %hhu %hhu\n",
+	   img->reds[i], img->greens[i], img->blues[i]);
+  }
+}
+
+/* ppm_clone : ppm -> ppm */
+/* creates an allocated clone of the ppm input */
+ppm *ppm_clone(ppm *img)
+{
+  ppm *clone = (ppm*)malloc(sizeof(ppm));
+  clone->w = img->w;
+  clone->h = img->h;
+  /* #grader You need to allocate new space for reds, greens and blues and
+   * copy the entire arrays.  Now you have two ppms which both point to the
+   * same data.  If one is modified, the other is too.  What we want is two
+   * separate copies of the same data, not two pointers to one copy of the
+   * data. */
+  clone->reds = img->reds;
+  clone->greens = img->greens;
+  clone->blues = img->blues;
+  return clone;
+}
+
+/* ppm_free : ppm -> <void> */
+/* frees an in-memory ppm */
+void ppm_free(ppm *img)
+{
+  free(img->reds);
+  free(img->greens);
+  free(img->blues);
+  free(img);
+  return;
+}
+
+/* luminance : byte byte byte-> byte */
+/* computes the luminance of a color r,g,b */
+byte luminance(byte r, byte g, byte b)
+{
+  byte m = (byte) (0.2126 * r + 0.7152 * g + 0.0722 * b);
+  return m;
+}
+
+/* grayscale : ppm -> <void> */
+/* destructively updates a ppm to grayscale colors */
+void grayscale(ppm *img)
+{
+  int i;
+  for(i = 0; i < img->w * img->h; i++) {
+    img->reds[i] = luminance(img->reds[i],img->greens[i],img->blues[i]);
+    img->greens[i] = img->reds[i];
+    img->blues[i] = img->greens[i];
+  }
+  return;
+}
+  
+  
+int main(int argc,char *argv[])
+{
+  ppm *image = ppm_in();
+  grayscale(image);
+  ppm_out(image);
+  ppm_free(image);
+  return 0;
+}
+  
+
+
+
+/* ====== evaluation ======  */
+
+/* ppm_in         10/10 */
+/* ppm_out         6/ 6 */
+/* ppm_clone       5/10 */
+/* ppm_free        8/ 8 */
+/* luminance       2/ 2 */
+/* grayscale      10/10 */
+
+/* Makefile        2/ 2 */
+/* svn             2/ 2 */
+
+/* style          10/10 */
+
+/* _total-score_  55/60 */
+
+/* graded by Nick Seltzer */

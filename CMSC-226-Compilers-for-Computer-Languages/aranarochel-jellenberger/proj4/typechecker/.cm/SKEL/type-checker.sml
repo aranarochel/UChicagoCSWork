@@ -1,0 +1,2 @@
+Skeleton 5
+d3f8d"AST"d"Int"d"Var"Cd"Atom"d"List"ä¢Type"d"Option"ä¢ParseTree"Cd"BasisNames"d"PrintParseTree"ä¢Basis"d"Error"d"IntInf"Naã¢TYPE_CHECKER"h0ad"TypeChecker"jh9ad"PT"gp1ÿ5ad"B"gp1ÿ ad"DC"gp1d"DataCon"ad"Ty"gp1ÿ%Cad"TC"gp1d"TyCon"ad"TV"gp1d"TyVar"ad"C"gp1d"Context"ad"TU"gp1d"TypeUtil"ad"AMap"gp1d"AtomMap"Ngp1ÿ;

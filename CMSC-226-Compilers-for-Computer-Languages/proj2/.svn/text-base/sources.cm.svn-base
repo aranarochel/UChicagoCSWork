@@ -1,0 +1,41 @@
+(* sources.cm
+ *
+ * COPYRIGHT (c) 2015 John Reppy (http://www.cs.uchicago.edu/~jhr)
+ * All rights reserved.
+ *
+ * CMSC 22610 Sample code (Winter 2015)
+ *
+ * CM file for Project 2.
+ *)
+
+Library
+
+  structure BasisNames
+  structure Parser
+  structure ParseTree
+  structure PrintParseTree
+
+is
+  $/basis.cm
+  $/smlnj-lib.cm
+  $/ml-lpt-lib.cm
+
+  basis-names.sml
+  error.sml
+  parse-tree.sml
+  flang.grm : ML-Antlr
+  parser.sml
+  print-parse-tree.sml
+
+(* code for ML-ULex based scanner *)
+  flang.lex : ML-ULex
+
+(* code for hand-written scanner *)
+(* if you are using your lexer from project 1, then you will need
+ * to remove flang.lex and replace it with the following files:
+
+  flang-hand-lexer.sml
+  flang-hand-scanner-sig.sml
+  flang-hand-scanner.sml  (* your Project-1 scanner *)
+
+ *)

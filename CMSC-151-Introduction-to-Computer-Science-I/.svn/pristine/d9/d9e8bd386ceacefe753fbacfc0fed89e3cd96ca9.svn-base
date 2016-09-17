@@ -1,0 +1,476 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-intermediate-reader.ss" "lang")((modname graded-hw4) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ())))
+;; Jaime Arana-Rochel
+;; aranarochel
+;; CS151 Autumn 2012, Homework 4
+
+(require 2htdp/image)
+(require racket/match)
+
+;; === Data Definitions ===
+
+;; a 3-dimensional vector is a (make-vec3 x y z) for x, y, z numbers
+(define-struct vec3 (x y z))
+
+;; rgb is a (make-rgb r g b)
+;; for r (red) a num, g (green) a num, and b (blue) a num
+;; each component is on the interval [0,1]
+(define-struct rgb (r g b))
+
+
+;; Problem 1
+
+;; mem? : symbol (listof symbol) -> bool
+;; returns true if the given symbol appears in the list
+;; returns false otherwise
+(define (mem? s ss)
+  (cond
+    [(empty? ss) false]
+    [else (if (symbol=? s (first ss)) true (mem? s (rest ss)))]))
+(check-expect (mem? 'a (list 'a 'b 'c)) true)
+(check-expect (mem? 'a (list 'x 'y 'z)) false)
+
+
+;; remove-sym : symbol (listof symbol) -> (listof symbol)
+;; remove all instances of a given symbol
+;; in a given list
+(define (remove-sym s ss)
+  (cond
+    [(empty? ss) empty]
+    [else
+     (if (mem? s ss) (remove s (rest ss)) ss)]))
+(check-expect (remove-sym 'a empty) empty)
+(check-expect (remove-sym 'a (list 'a 'b 'c 'a)) 
+              (list 'b 'c))
+(check-expect (remove-sym 'a (list 'b 'c)) 
+              (list 'b 'c))
+
+
+;; drop : nat (listof α) -> (listof α)
+(define (drop n loα)
+  (cond
+    [(and (zero? n) (empty? loα))
+     (error 'drop "too few items")]
+    [(and (zero? n) (cons? loα))
+     loα]
+    [(and (positive? n) (empty? loα))
+     (error 'drop "too few items")]
+    [(> n (length loα)) 
+     (error 'drop "dropping more items than possible")]
+    [(and (positive? n) (cons? loα))
+     (drop (sub1 n) (rest loα))]))
+(check-error (drop 0 empty))
+(check-expect (drop 0 (list 1 2)) (list 1 2))
+(check-error (drop 1 empty))
+(check-error (drop 2 (list 'a)))
+(check-expect (drop 2 (list "apple" "orange" "grape"))
+              (list "grape"))
+
+
+;; every-other : (listof α) -> (listof α)
+;; removes every other item from the list
+;; starting from the second
+(define (every-other loα)
+  (cond
+    [(empty? loα) empty]
+    [(cons? loα)
+     (cond
+       [(= (length loα) 1) loα]
+       [else
+        (cons (first loα) 
+              (every-other (rest (rest loα))))])]))
+(check-expect (every-other empty) empty)
+(check-expect (every-other (list 1)) (list 1))
+(check-expect (every-other (list 'a 'b 'c)) (list 'a 'c))
+(check-expect (every-other (list 1 2 3 4 5)) (list 1 3 5))
+
+
+;; Problem 2
+
+;; qIV? : posn -> bool
+;; determines if a posn is in quadrant IV
+(define (qIV? p)
+  (and (positive? (posn-x p))
+       (negative? (posn-y p))))
+(check-expect (qIV? (make-posn 1 1)) false)
+(check-expect (qIV? (make-posn -1 1)) false)
+(check-expect (qIV? (make-posn -1 -1)) false)
+(check-expect (qIV? (make-posn 1 -1)) true)
+
+;; qIV : (listof posn) -> (listof posn)
+;; keeps the points in quadrant IV
+;; discards the rest
+(define (qIV posns)
+  (filter qIV? posns))
+(check-expect 
+ (qIV (list (make-posn 1 1) (make-posn 1 -2) (make-posn 1 -3)))
+ (list (make-posn 1 -2) (make-posn 1 -3)))
+(check-expect (qIV (list (make-posn 1 1))) empty)
+(check-expect (qIV (list (make-posn 1 0) (make-posn 1 -1)))
+              (list (make-posn 1 -1)))
+
+;; prime? : num -> bool
+;; determines if a number is prime
+(define (prime? n)
+  (cond
+    [(= n 1) false]
+    [(= n 2) true]
+    [(= n 3) true]
+    [(even? n) false]
+    [(odd? n)
+     (cond
+       [(not (= (modulo n 3) 0)) true])]))       
+(check-expect (prime? 1) false)
+(check-expect (prime? 2) true)
+(check-expect (prime? 3) true)
+(check-expect (prime? 6) false)
+(check-expect (prime? 449) true)
+
+;; primes : (listof num) -> (listof num)
+;; keeps prime numbers, discards rest
+(define (primes ns)
+  (filter prime? ns))
+(check-expect (primes (list 1 2 3)) (list 2 3))
+(check-expect (primes (list 5 17 4)) (list 5 17))
+(check-expect (primes (list 4 6 8)) empty)
+
+;; x-num : posn -> num
+;; gives the x component of a posn
+(define (x-num p)
+  (posn-x p))
+(check-expect (x-num (make-posn 1 4)) 1)
+
+;; just-x : (listof posn) -> (listof posn)
+;; selects the x components of a list of posns
+(define (just-x ps)
+  (map x-num ps))
+(check-expect (just-x
+               (list
+                (make-posn 1 0)
+                (make-posn 5 10)
+                (make-posn -1 2)))
+              (list 1 5 -1))
+
+;; y-num : posn -> num
+;; gives the y component of a posn
+(define (y-num p)
+  (posn-y p))
+(check-expect (y-num (make-posn 1 4)) 4)
+
+;; sum-y : (listof posn) -> num
+;; adds all y components of a list of posns 
+(define (sum-y ps)
+  (foldr + 0 (map y-num ps)))
+(check-expect (sum-y 
+               (list 
+                (make-posn 1 0) 
+                (make-posn 2 5) 
+                (make-posn 1 2))) 7)
+
+;; sum-of-squares : (listof num) -> num
+;; adds the squares of all numbers in a list
+(define (sum-of-squares ns)
+  (foldr + 0 (map sqr ns)))
+(check-expect (sum-of-squares (list 1 2 3)) 14)
+
+;; threshold? : num img -> bool
+;; determines if the image-width is greater
+;; than the given width
+(define (threshold? n img)
+  (if (> (image-width img) n) true false))
+(check-expect (threshold? 3 (rectangle 1 2 "solid" "blue")) false)
+(check-expect (threshold? 3 (rectangle 4 2 "solid" "blue")) true)
+
+;; wider-than : num (listof img) -> (listof img)
+;; keeps the images wider than the given threshold
+;; discards the rest
+(define (wider-than n imgs)
+  (filter threshold? imgs))
+
+;#grader:You havent provided testers
+;; Problem 3
+
+;; vec3+ : vec3 vec3 -> vec3
+;; adds two vectors, given two vectors
+(define (vec3+ v1 v2)
+  (make-vec3
+   (+ (vec3-x v1) (vec3-x v2))
+   (+ (vec3-y v1) (vec3-y v2))
+   (+ (vec3-z v1) (vec3-z v2))))
+(check-expect (vec3+ (make-vec3 1 1 1) (make-vec3 1 1 1)) (make-vec3 2 2 2))
+(check-expect (vec3+ (make-vec3 2 3 4) (make-vec3 5 6 7)) (make-vec3 7 9 11))
+
+;; num-clamp : num -> num
+;; Limits a given number on the interval [0,1]
+(define (num-clamp n)
+  (cond
+    [(< n 0) 0]
+    [(> n 1) 1]
+    [else n]))
+(check-expect (num-clamp -1) 0)
+(check-expect (num-clamp 2) 1)
+(check-expect (num-clamp .5) .5)
+
+;; rgb+ : rgb rgb -> rgb
+;; adds two given rgb values
+(define (rgb+ c1 c2)
+  (make-rgb
+   (num-clamp (+ (rgb-r c1) (rgb-r c2)))
+   (num-clamp (+ (rgb-g c1) (rgb-g c2)))
+   (num-clamp (+ (rgb-b c1) (rgb-b c2)))))
+(check-expect (rgb+ (make-rgb 1 1 1) (make-rgb 1 1 1)) (make-rgb 1 1 1))
+(check-expect (rgb+ (make-rgb .1 .2 .3) (make-rgb .1 .2 .3)) (make-rgb .2 .4 .6))
+
+;; vec3-sum : (listof vec3) -> vec3
+;; add together all vectors in the list
+(define (vec3-sum vec3s)
+  (foldr vec3+ (make-vec3 0 0 0) vec3s))
+(check-expect (vec3-sum 
+               (list 
+                (make-vec3 1 1 1) (make-vec3 2 2 2)))
+              (make-vec3 3 3 3))
+
+;; rgb-sum : (listof rgb) -> rgb
+;; add together all rgbs in the list
+(define (rgb-sum rgbs)
+  (foldr rgb+ (make-rgb 0 0 0) rgbs))
+(check-expect (rgb-sum 
+               (list 
+                (make-rgb .1 .1 .1) (make-rgb .2 .2 .2)))
+              (make-rgb .3 .3 .3))
+
+
+
+;; Problem 5
+
+;; putlast : α (listof α) -> (listof α)
+;; put item at end of list
+(define (putlast x xs) 
+  (if (empty? xs) 
+      (list x)   
+      (cons (first xs) (putlast x (rest xs)))))
+(check-expect (putlast 1 (list 2 3)) (list 2 3 1))
+
+;; sum-pairs : (listof num) -> (listof num)
+;; add consecutive pairs of numbers in a list
+(define (sum-pairs ns)
+  (cond  
+    [(empty? ns) empty] 
+    [(empty? (rest ns)) empty]  
+    [else (cons (+ (first ns) (first (rest ns)))   
+                (sum-pairs (rest ns)))]))
+(check-expect (sum-pairs empty) empty)
+(check-expect (sum-pairs (list 1 2)) (list 3))
+(check-expect (sum-pairs (list 1 2 3 4)) (list 3 5 7))
+
+;; next-pascal-row : (listof num) -> (listof num)
+;; given one row of Pascal's triangle, compute the next one
+;; ex: (next-pascal-row (list 1)) => (list 1 1)
+;; ex: (next-pascal-row (list 1 2 1)) => (list 1 3 3 1)
+(define (next-pascal-row ns) 
+  (cons 1 (putlast 1 (sum-pairs ns))))
+(check-expect (next-pascal-row (list 1)) (list 1 1))
+(check-expect (next-pascal-row (list 1 3 3 1)) (list 1 4 6 4 1))
+
+;; pascal-backwards : nat -> (listof (listof num))
+;; generate the first n rows of Pascal's triangle, 
+;; with the "higher" (i.e. shorter) rows later in the output
+;; ex: (pascal-backwards 2) => (list (list 1 1) (list 1))
+(define (pascal-backwards n) 
+  (cond  
+    [(zero? n) empty]   
+    [(= n 1) (list (list 1))]   
+    [(> n 1)    
+     (local {(define p (pascal-backwards (sub1 n)))}     
+       (cons (next-pascal-row (first p)) p))]))            
+(check-expect (pascal-backwards 0) empty)
+(check-expect (pascal-backwards 1) (list (list 1)))
+(check-expect (pascal-backwards 3) (list (list 1 2 1) (list 1 1) (list 1)))
+
+;; pascal : nat -> (listof (listof num))
+;; generate the first n rows of Pascal's triangle
+;; ex: (pascal 0) => empty
+;; ex: (pascal 3) => (list (list 1) (list 1 1) (list 1 2 1))
+(define (pascal n) 
+  (reverse (pascal-backwards n)))
+(check-expect (pascal 4)       
+              (list (list 1) 
+                    (list 1 1) 
+                    (list 1 2 1) (list 1 3 3 1)))
+
+
+;; ns->ss : (listof nums) -> (listof strings)
+;; make a list of numbers into a list of strings
+(define (ns->ss ns)
+  (map number->string ns))
+(check-expect (ns->ss (list 1 2 3))
+              (list "1" "2" "3"))
+
+;; nss->sss : (listof (listof nums)) -> (listof (listof strings))
+;; makes a list of a list of numbers
+;; into a list of a list of strings
+(define (nss->sss nss)
+  (map ns->ss nss))
+(check-expect (nss->sss
+               (list
+                (list 1) (list 2 3 4)))
+              (list (list "1") (list "2" "3" "4")))
+
+;; concat-with : string (listof string) -> string
+;; concatenates all strings
+;; with a given separator string
+(define (concat-with s los)
+  (cond
+    [(empty? (rest los)) (first los)]
+    [(cons? los)
+     (string-append (string-append (first los) s) (concat-with s (rest los)))]))
+(check-expect (concat-with "," (list "Crosby" "Stills" "Nash")) "Crosby,Stills,Nash")
+(check-expect (concat-with "and" (list "1" "2" "3")) "1and2and3")
+(check-expect (concat-with "<>" (list "Billy")) "Billy")
+
+;; text-list : (listof num) -> img
+;; renders an image of a list of numbers
+(define (text-list ns)
+  (text (concat-with " " (ns->ss ns)) 12 "blue"))
+"eyeball test"
+(text-list (list 2 3 4 5))
+
+
+;; show-pascal : nat color color -> img
+;; renders an image of n rows of pascals triangle
+(define (show-pascal n)
+  (cond
+    [(empty? (pascal n)) empty-image]
+    [(= n 0) empty-image]
+    [(> n 0)
+     (above (text-list (first (pascal n)))
+            (show-pascal (sub1 n)))]))
+
+;#grader: Your input should be the number of rows and two colors.The output should be a pascal's triangle in these colors.
+     
+
+;; Problem 6
+
+;; koch : nat-> img
+;; renders a kotch curve given a length of the curve
+(define (koch n)
+  (cond
+    [(<= n 1) (square 1 "solid" "black")]
+    [(> n 1) (local {(define k (koch (floor (/ n 3))))}
+               (beside/align 
+                "bottom" 
+                k (rotate 60 k) (rotate -60 k) k))]))
+"eyeball test"
+(koch 50)
+(koch 300)
+
+
+
+;; ======TESTS ==========
+;;; 30 tests total
+;
+;;; ====== problem 1
+;
+(check-expect (mem? 'Apple (list 'AA 'BB 'CC)) false)
+(check-expect (mem? 'Apple (list 'AA 'BB 'Apple)) true)
+(check-expect (mem? 'Apple (list)) false)
+
+(check-expect (remove-sym 'Apple  (list 'AA 'BB 'CC))  (list 'AA 'BB 'CC))
+(check-expect (remove-sym 'Apple  (list 'Apple 'BB 'CC))  (list 'BB 'CC))
+(check-expect (remove-sym 'Apple  (list ))  (list ))
+
+
+;(check-expect (drop 0 empty) empty);fails: base cases are not handled correctly
+(check-expect (drop 0 (build-list 7 identity)) (list 0 1 2 3 4 5 6 ))
+;(check-error (drop 3 empty));fails
+(check-expect (drop 3 (build-list 7 identity)) (list 3 4 5 6  ))
+
+(check-expect (every-other (list 1 2 3)) (list 1 3))
+(check-expect (every-other (list 1 2))   (list 1))
+(check-expect (every-other (list 1))     (list 1))
+(check-expect (every-other (list))     (list ))
+;
+;;; ====== problem 2
+;
+;(check-expect (primes (build-list 20 add1))
+ ;             (list 2 3 5 7 11 13 17 19))
+(check-expect (qIV (list (make-posn 3 -3) (make-posn 3 3)))
+              (list (make-posn 3 -3)))
+
+
+(check-expect (just-x (list (make-posn 1 1) (make-posn 1 1) (make-posn 5 5)))
+              (list 1 1 5))
+(check-expect (just-x (list )) (list))
+
+
+(check-expect (sum-y (list (make-posn 1 1) (make-posn 1 1) (make-posn 5 5)))
+              7)
+(check-expect (sum-y (list )) 0)
+
+
+(check-expect (sum-of-squares (list 1  2 3)) 14)
+(check-expect (sum-of-squares (list )) 0)
+
+;(check-expect (wider-than 500 (list (square 400 "solid" "lightblue")
+;                                    (circle 300 "solid" "darkblue")))
+;              (list (circle 300 "solid" "darkblue")));shows errors
+
+;;; ====== problem 3
+;
+(check-expect (vec3-sum (list (make-vec3 1 1 1) (make-vec3 2 2 2)))
+              (make-vec3 3 3 3 ))
+(check-expect (vec3-sum (list)) (make-vec3 0 0 0 ))
+
+
+(check-expect (rgb+ (make-rgb .2 .2 .2) (make-rgb .1 .1 .1))
+              (make-rgb .3 .3 .3))
+;(check-expect (rgb-sum  (list
+;                (make-rgb 1 1 0)
+;                (make-rgb 0 -1 .5)))
+;              (make-rgb 1 0 .5));fails
+
+;;; ====== problem 5
+;"pascal"
+;(show-pascal 10 "red" "blue")
+;(show-pascal 0 "red" "blue")
+
+;
+;;; ====== problem 6
+;"koch" 
+(koch 200)
+;
+;;;=====================EVALUATION=============================
+;
+;
+;;; mem?           :   5/  5
+;;; remove-sym     :   5/  5
+;;; drop           :   4/  5
+;;; every-other    :   5/  5
+;
+;;; qIV            :   3/  3
+;;; primes         :   6/  6
+;;; just-x         :   6/  3
+;;; sum-y          :   3/  3
+;;; sum-of-squares :   3/  3
+;;; wider-than     :   2/  3
+;
+;;; vec3-sum       :   3/  3
+;;; rgb-sum        :   2/  3
+;
+;;; riemann/lr     :   0/  6
+;
+;;; show-pascal    :   3/  6
+;
+;;; koch           :   6/  6
+;
+;;; style          :   10/ 10
+;;; contracts      :   6/  6
+;;; purposes       :   6/  6 
+;;; adequate tests :   9/ 10 
+;
+;;; svn            :   3/  3
+;
+;;; _total-score_  :   87/100
+;
+;;; graded by Nikita Mishra

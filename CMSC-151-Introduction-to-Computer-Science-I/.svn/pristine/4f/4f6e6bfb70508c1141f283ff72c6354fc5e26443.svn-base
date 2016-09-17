@@ -1,0 +1,131 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-intermediate-lambda-reader.ss" "lang")((modname lab6-starter) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ())))
+;; YOUR NAME HERE
+;; Lab 6
+;; CS151 Autumn 2012, University of Chicago
+
+(require racket/match)
+
+;; === data definitions ===
+
+;; a state-prob is a (make-state-prob s d ev)
+;; where s (state) is a symbol (like 'AL, 'TX, etc.),
+;;       d (probability of Democratic victory) is a number on [0,100], and
+;;       ev (electoral votes) is a num
+(define-struct state-prob (s d ev))
+;; Note: the probability here is expressed on the interval [0,100] for 
+;; ease of use with random. 
+
+;; a state-result is a (make-state-result s p ev)
+;; where s (state) is a symbol (like 'AL, 'TX, etc.),
+;;       p (party) is a symbol (either 'D or 'R), and
+;;       ev (electoral votes) is a num
+(define-struct state-result (s p ev))
+
+;; a country-result is a (make-country-result ds rs)
+;; where ds (Democratic states) is a (listof state-result), and
+;;       rs (Republican states) is a (listof state-result)
+(define-struct country-result (ds rs))
+
+;; a tally is a (make-tally O R t)
+;; where O (Obama wins) is a num (number of Obama victories),
+;;       R (Romney wins) is a num (number of Romney victories), and
+;;       tie (number of ties) is a num
+(define-struct tally (O R t))
+
+;; an outcome is a symbol: either 'Obama, 'Romney or 'tie
+
+;; === data === 
+
+;; state-probs : (listof state-prob)
+;; These probabilities were gathered from FiveThirtyEight 
+;; [http://fivethirtyeight.blogs.nytimes.com/]
+;; on Thursday Nov 1 2012.
+;; Note that Washington, DC is a "state" as well.
+(define state-probs 
+  (list (make-state-prob 'AL 0 9)
+        (make-state-prob 'AK 0 3)
+        (make-state-prob 'AZ 3 11)
+        (make-state-prob 'AR 0 6)
+        (make-state-prob 'CA 100 55)
+        (make-state-prob 'CO 63 9)
+        (make-state-prob 'CT 100 7)
+        (make-state-prob 'DE 100 3)
+        (make-state-prob 'DC 100 3)
+        (make-state-prob 'FL 41 29)
+        (make-state-prob 'GA 0 16)
+        (make-state-prob 'HI 100 4)
+        (make-state-prob 'ID 0 4)
+        (make-state-prob 'IL 100 20)
+        (make-state-prob 'IN 0 11)
+        (make-state-prob 'IA 78 6)
+        (make-state-prob 'KS 0 6)
+        (make-state-prob 'KY 0 8)
+        (make-state-prob 'LA 0 8)
+        (make-state-prob 'ME 100 4)
+        (make-state-prob 'MD 100 10)
+        (make-state-prob 'MA 100 11)
+        (make-state-prob 'MI 98 16)
+        (make-state-prob 'MN 98 10)
+        (make-state-prob 'MS 0 6)
+        (make-state-prob 'MO 0 10)
+        (make-state-prob 'MT 2 3)
+        (make-state-prob 'NE 0 5)
+        (make-state-prob 'NV 85 6)
+        (make-state-prob 'NH 75 4)
+        (make-state-prob 'NJ 100 14)
+        (make-state-prob 'NM 98 5)
+        (make-state-prob 'NY 100 29)
+        (make-state-prob 'NC 19 15)
+        (make-state-prob 'ND 0 3)
+        (make-state-prob 'OH 80 18)
+        (make-state-prob 'OK 0 7)
+        (make-state-prob 'OR 98 7)
+        (make-state-prob 'PA 96 20)
+        (make-state-prob 'RI 100 4)
+        (make-state-prob 'SC 0 9)
+        (make-state-prob 'SD 0 3)
+        (make-state-prob 'TN 0 11)
+        (make-state-prob 'TX 0 38)
+        (make-state-prob 'UT 0 6)
+        (make-state-prob 'VT 100 3)
+        (make-state-prob 'VA 61 13)
+        (make-state-prob 'WA 100 12)
+        (make-state-prob 'WV 0 5)
+        (make-state-prob 'WI 88 10)
+        (make-state-prob 'WY 9 3)))
+
+;; === simulation code ===
+
+;; sim-state : state-prob -> state-result
+;; Simulate a result in the given state by generating a random number r on [0,100]
+;; If r is less than the probability of Democratic victory, assign the victory to
+;; the Democrats. Otherwise assign the victory to the Republicans.
+
+;; sim-country : (listof state-prob) -> country-result
+;; Given the list of states and probabilities, produce a country result.
+
+;; D-ev : country-result -> num
+;; count Democrats' electoral votes in result
+
+;; R-ev : country-result -> num
+;; count Republicans' electoral votes in result
+
+;; compute-outcome : country-result -> outcome
+;; determine outcome of simulation
+
+;; run-trials : nat -> tally
+;; Run n trials of the simulation, tally the results.
+
+;; chance-D-victory : nat -> num
+;; Run n trials, compute the percent of Democratic victories they predict.
+;; Return a number on [0,1].
+
+;; chance-R-victory : nat -> num
+;; Run n trials, compute the percent of Republican victories they predict.
+;; Return a number on [0,1].
+
+;; chance-tie : nat -> num
+;; Run n trials, compute the percent of electoral vote they predict.
+;; Return a number on [0,1].

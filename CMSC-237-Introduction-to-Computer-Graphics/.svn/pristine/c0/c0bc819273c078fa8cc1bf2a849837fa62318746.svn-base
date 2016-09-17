@@ -1,0 +1,54 @@
+/* Project 2 Rubric */
+/*CMSC 23700, Fall 2015 */
+
+/* === Correctness === */
+/* project 1 completion/fixes (if applicable)                           10/10 */ 
+/* loading lighting & textures from OBJ::Model                          10/10 */
+/* rendering modes (lighting, texture mapping)                          10/10 */
+/* directional lighting shader program (vertex and fragment shaders)    15/15 */
+/* texture shader program (vertex and fragment shaders)                 20/20 */
+/* user interface controls (textures, diffuse)                          5/5  */
+
+/* subtotal   70/ 70 */ 
+
+/* === Style, etc. === */
+/* code indentation and layout         7/10
+
+Make sure to provide comments/documentation in your shader and C++ source files on 
+what your code is doing. Also remove any comments such as 
+
+/* CODE HERE */ or /* HINTS */ once you implemented the code (if applicable)
+
+*/
+/* code clarity                        10/10 */
+/* code reuse 						   7/10 
+
+You should reuse textures that have already been created. One way to do this is by 
+storing the texture in a map (or some collection) and if the texture is 
+already in the map then have the object point to the already created texture 
+as such (pseudocode): 
+
+std::map<std::string, cs237::texture2D *> texMap;
+cs237::texture2D * imgIt = texMap.find(texName);
+
+if (imgIt != texMap.end()) {
+    //Texture already in the map. 
+}
+else {
+    //cs237::image2d *img = scene.TextureByName(texName);
+    //cs237::texture2D *tex = new cs237::texture2D(GL_TEXTURE_2D, img);
+    //tex->Parameter (GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // tex->Parameter (GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    //insert texture into map 
+    //texMap.insert((texName, tex));
+    //assign instance object to texture
+}
+
+*/ 
+
+/* subtotal  24/30 */ 
+/* 
+
+/* _TOTAL-SCORE_    94/100 */
+
+/* graded by Lamont */

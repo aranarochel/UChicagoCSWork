@@ -1,0 +1,11 @@
+Group
+  signature INSTRUMENTED_LIST
+  structure InstrumentedList
+  structure Check
+  structure Tests
+is
+  $/basis.cm
+  instrumented-list-sig.sml
+  instrumented-list.sml
+  check.sml
+  tests.sml

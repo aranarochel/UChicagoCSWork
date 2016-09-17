@@ -1,0 +1,599 @@
+Elm.Main = Elm.Main || {};
+Elm.Main.make = function (_elm) {
+   "use strict";
+   _elm.Main = _elm.Main || {};
+   if (_elm.Main.values)
+   return _elm.Main.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   _P = _N.Ports.make(_elm),
+   $moduleName = "Main",
+   $Basics = Elm.Basics.make(_elm),
+   $Color = Elm.Color.make(_elm),
+   $Dict = Elm.Dict.make(_elm),
+   $Graphics$Collage = Elm.Graphics.Collage.make(_elm),
+   $Graphics$Element = Elm.Graphics.Element.make(_elm),
+   $Graphics$Input = Elm.Graphics.Input.make(_elm),
+   $Keyboard = Elm.Keyboard.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Mouse = Elm.Mouse.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $Text = Elm.Text.make(_elm),
+   $Time = Elm.Time.make(_elm),
+   $Touch = Elm.Touch.make(_elm),
+   $Window = Elm.Window.make(_elm);
+   var mutl = F3(function (x,
+   y,
+   _v0) {
+      return function () {
+         switch (_v0.ctor)
+         {case "_Tuple2":
+            return {ctor: "_Tuple2"
+                   ,_0: _v0._0 * x
+                   ,_1: y * _v0._1};}
+         _U.badCase($moduleName,
+         "on line 204, column 19 to 26");
+      }();
+   });
+   var $float = function (_v4) {
+      return function () {
+         switch (_v4.ctor)
+         {case "_Tuple2":
+            return {ctor: "_Tuple2"
+                   ,_0: $Basics.toFloat(_v4._0)
+                   ,_1: $Basics.toFloat(0 - _v4._1)};}
+         _U.badCase($moduleName,
+         "on line 202, column 16 to 37");
+      }();
+   };
+   var shiftList = function (xs) {
+      return A2($List.append,
+      $List.tail(xs),
+      _L.fromArray([$List.head(xs)]));
+   };
+   var thickLine = F2(function (col,
+   i) {
+      return _U.replace([["color"
+                         ,col]
+                        ,["width",$Basics.toFloat(i)]],
+      $Graphics$Collage.defaultLine);
+   });
+   var hspace = A2($Graphics$Element.spacer,
+   20,
+   10);
+   var lineStyle = function () {
+      var ls = $Graphics$Collage.defaultLine;
+      return _U.replace([["color"
+                         ,$Color.yellow]
+                        ,["width",4]],
+      ls);
+   }();
+   var strStyle = function ($) {
+      return $Text.centered($Text.height(20)($Text.fromString($)));
+   };
+   var btnH = 45;
+   var btnW = 60;
+   var myButton = F3(function (num,
+   evt,
+   s) {
+      return function () {
+         var col = _U.eq(num,
+         1) ? $Color.red : _U.eq(num,
+         2) ? $Color.blue : _U.eq(num,
+         3) ? $Color.green : _U.eq(num,
+         4) ? $Color.purple : _U.eq(num,
+         5) ? $Color.black : _U.eq(num,
+         6) ? $Color.lightRed : _U.eq(num,
+         7) ? $Color.lightOrange : $Color.lightYellow;
+         var mkBtn = function (c) {
+            return A3($Graphics$Collage.collage,
+            btnW,
+            btnH,
+            _L.fromArray([A2($Graphics$Collage.filled,
+                         c,
+                         A2($Graphics$Collage.rect,
+                         btnW,
+                         btnH))
+                         ,A2($Graphics$Collage.outlined,
+                         lineStyle,
+                         A2($Graphics$Collage.rect,
+                         btnW,
+                         btnH))
+                         ,$Graphics$Collage.toForm(strStyle(s))]));
+         };
+         return A4($Graphics$Input.customButton,
+         evt,
+         mkBtn(col),
+         mkBtn($Color.grey),
+         mkBtn($Color.yellow));
+      }();
+   });
+   var toNgons = F3(function (ps,
+   c,
+   i) {
+      return function () {
+         var $float = function (_v8) {
+            return function () {
+               switch (_v8.ctor)
+               {case "_Tuple2":
+                  return {ctor: "_Tuple2"
+                         ,_0: $Basics.toFloat(_v8._0)
+                         ,_1: $Basics.toFloat(0 - _v8._1)};}
+               _U.badCase($moduleName,
+               "on line 109, column 37 to 58");
+            }();
+         };
+         var fs = A2($List.map,
+         $float,
+         ps);
+         var cs = A2($List.map,
+         function (_v12) {
+            return function () {
+               switch (_v12.ctor)
+               {case "_Tuple2":
+                  return A2($Graphics$Collage.move,
+                    {ctor: "_Tuple2"
+                    ,_0: _v12._0
+                    ,_1: _v12._1},
+                    $Graphics$Collage.filled(c)(A2($Graphics$Collage.ngon,
+                    i,
+                    _v12._0 / 20)));}
+               _U.badCase($moduleName,
+               "on line 111, column 45 to 85");
+            }();
+         },
+         fs);
+         var cs$ = $Graphics$Collage.group(cs);
+         return cs$;
+      }();
+   });
+   var add1 = F2(function (touch,
+   dict) {
+      return function () {
+         var newPoint = {ctor: "_Tuple2"
+                        ,_0: touch.x
+                        ,_1: touch.y};
+         var oldPoints = A2($Maybe.withDefault,
+         _L.fromArray([]),
+         A2($Dict.get,touch.id,dict));
+         return A3($Dict.insert,
+         touch.id,
+         A2($List._op["::"],
+         newPoint,
+         oldPoints),
+         dict);
+      }();
+   });
+   var addN = F2(function (touches,
+   dict) {
+      return A3($List.foldl,
+      add1,
+      dict,
+      touches);
+   });
+   var upstate = F2(function (event,
+   _v16) {
+      return function () {
+         return function () {
+            switch (event.ctor)
+            {case "Anim": return {_: {}
+                                 ,anim: true
+                                 ,color: _v16.color
+                                 ,pcolor: _v16.pcolor
+                                 ,size: _v16.size};
+               case "Black": return {_: {}
+                                    ,anim: _v16.anim
+                                    ,color: $Color.black
+                                    ,pcolor: _v16.pcolor
+                                    ,size: _v16.size};
+               case "Blue": return {_: {}
+                                   ,anim: _v16.anim
+                                   ,color: $Color.blue
+                                   ,pcolor: _v16.pcolor
+                                   ,size: _v16.size};
+               case "DAnim": return {_: {}
+                                    ,anim: false
+                                    ,color: _v16.color
+                                    ,pcolor: _v16.pcolor
+                                    ,size: _v16.size};
+               case "Dec": return {_: {}
+                                  ,anim: _v16.anim
+                                  ,color: _v16.color
+                                  ,pcolor: _v16.pcolor
+                                  ,size: _v16.size - 1};
+               case "Green": return {_: {}
+                                    ,anim: _v16.anim
+                                    ,color: $Color.green
+                                    ,pcolor: _v16.pcolor
+                                    ,size: _v16.size};
+               case "Inc": return {_: {}
+                                  ,anim: _v16.anim
+                                  ,color: _v16.color
+                                  ,pcolor: _v16.pcolor
+                                  ,size: _v16.size + 1};
+               case "POrg": return {_: {}
+                                   ,anim: _v16.anim
+                                   ,color: _v16.color
+                                   ,pcolor: $Color.lightOrange
+                                   ,size: _v16.size};
+               case "PRed": return {_: {}
+                                   ,anim: _v16.anim
+                                   ,color: _v16.color
+                                   ,pcolor: $Color.lightRed
+                                   ,size: _v16.size};
+               case "Purple": return {_: {}
+                                     ,anim: _v16.anim
+                                     ,color: $Color.purple
+                                     ,pcolor: _v16.pcolor
+                                     ,size: _v16.size};
+               case "Red": return {_: {}
+                                  ,anim: _v16.anim
+                                  ,color: $Color.red
+                                  ,pcolor: _v16.pcolor
+                                  ,size: _v16.size};}
+            _U.badCase($moduleName,
+            "between lines 77 and 92");
+         }();
+      }();
+   });
+   var animSig = A3($Signal.foldp,
+   F2(function (s,ls) {
+      return shiftList(ls);
+   }),
+   _L.fromArray([{ctor: "_Tuple2"
+                 ,_0: 10
+                 ,_1: 10}
+                ,{ctor: "_Tuple2",_0: 10,_1: 11}
+                ,{ctor: "_Tuple2",_0: 10,_1: 12}
+                ,{ctor: "_Tuple2",_0: 10,_1: 13}
+                ,{ctor: "_Tuple2",_0: 10,_1: 14}
+                ,{ctor: "_Tuple2",_0: 10,_1: 15}
+                ,{ctor: "_Tuple2",_0: 10,_1: 16}
+                ,{ctor: "_Tuple2",_0: 7,_1: 10}
+                ,{ctor: "_Tuple2",_0: 8,_1: 10}
+                ,{ctor: "_Tuple2",_0: 9,_1: 10}
+                ,{ctor: "_Tuple2",_0: 10,_1: 10}
+                ,{ctor: "_Tuple2",_0: 11,_1: 10}
+                ,{ctor: "_Tuple2",_0: 12,_1: 10}
+                ,{ctor: "_Tuple2",_0: 13,_1: 10}
+                ,{ctor: "_Tuple2",_0: 7,_1: 16}
+                ,{ctor: "_Tuple2",_0: 8,_1: 16}
+                ,{ctor: "_Tuple2",_0: 9,_1: 16}
+                ,{ctor: "_Tuple2",_0: 11,_1: 16}
+                ,{ctor: "_Tuple2",_0: 12,_1: 16}
+                ,{ctor: "_Tuple2",_0: 13,_1: 16}
+                ,{ctor: "_Tuple2",_0: 15,_1: 16}
+                ,{ctor: "_Tuple2",_0: 15,_1: 17}
+                ,{ctor: "_Tuple2",_0: 15,_1: 18}
+                ,{ctor: "_Tuple2",_0: 15,_1: 19}
+                ,{ctor: "_Tuple2",_0: 15,_1: 20}
+                ,{ctor: "_Tuple2",_0: 15,_1: 21}
+                ,{ctor: "_Tuple2",_0: 16,_1: 21}
+                ,{ctor: "_Tuple2",_0: 17,_1: 21}
+                ,{ctor: "_Tuple2",_0: 18,_1: 21}
+                ,{ctor: "_Tuple2",_0: 20,_1: 16}
+                ,{ctor: "_Tuple2",_0: 20,_1: 17}
+                ,{ctor: "_Tuple2",_0: 20,_1: 18}
+                ,{ctor: "_Tuple2",_0: 20,_1: 19}
+                ,{ctor: "_Tuple2",_0: 20,_1: 20}
+                ,{ctor: "_Tuple2",_0: 21,_1: 21}
+                ,{ctor: "_Tuple2",_0: 22,_1: 20}
+                ,{ctor: "_Tuple2",_0: 22,_1: 19}
+                ,{ctor: "_Tuple2",_0: 22,_1: 18}
+                ,{ctor: "_Tuple2",_0: 22,_1: 17}
+                ,{ctor: "_Tuple2",_0: 22,_1: 16}
+                ,{ctor: "_Tuple2",_0: 24,_1: 16}
+                ,{ctor: "_Tuple2",_0: 25,_1: 17}
+                ,{ctor: "_Tuple2",_0: 26,_1: 18}
+                ,{ctor: "_Tuple2",_0: 27,_1: 19}
+                ,{ctor: "_Tuple2",_0: 28,_1: 20}
+                ,{ctor: "_Tuple2",_0: 29,_1: 21}
+                ,{ctor: "_Tuple2",_0: 30,_1: 21}
+                ,{ctor: "_Tuple2",_0: 31,_1: 20}
+                ,{ctor: "_Tuple2",_0: 32,_1: 19}
+                ,{ctor: "_Tuple2",_0: 33,_1: 18}
+                ,{ctor: "_Tuple2",_0: 34,_1: 17}
+                ,{ctor: "_Tuple2",_0: 35,_1: 16}
+                ,{ctor: "_Tuple2",_0: 21,_1: 23}
+                ,{ctor: "_Tuple2",_0: 21,_1: 24}
+                ,{ctor: "_Tuple2",_0: 21,_1: 25}
+                ,{ctor: "_Tuple2",_0: 21,_1: 26}
+                ,{ctor: "_Tuple2",_0: 21,_1: 27}
+                ,{ctor: "_Tuple2",_0: 21,_1: 28}
+                ,{ctor: "_Tuple2",_0: 22,_1: 23}
+                ,{ctor: "_Tuple2",_0: 23,_1: 23}
+                ,{ctor: "_Tuple2",_0: 24,_1: 23}
+                ,{ctor: "_Tuple2",_0: 22,_1: 25}
+                ,{ctor: "_Tuple2",_0: 23,_1: 25}
+                ,{ctor: "_Tuple2",_0: 24,_1: 25}
+                ,{ctor: "_Tuple2",_0: 22,_1: 28}
+                ,{ctor: "_Tuple2",_0: 23,_1: 28}
+                ,{ctor: "_Tuple2",_0: 24,_1: 28}
+                ,{ctor: "_Tuple2",_0: 26,_1: 23}
+                ,{ctor: "_Tuple2",_0: 26,_1: 24}
+                ,{ctor: "_Tuple2",_0: 26,_1: 25}
+                ,{ctor: "_Tuple2",_0: 26,_1: 26}
+                ,{ctor: "_Tuple2",_0: 26,_1: 27}
+                ,{ctor: "_Tuple2",_0: 26,_1: 28}
+                ,{ctor: "_Tuple2",_0: 28,_1: 23}
+                ,{ctor: "_Tuple2",_0: 28,_1: 24}
+                ,{ctor: "_Tuple2",_0: 28,_1: 25}
+                ,{ctor: "_Tuple2",_0: 28,_1: 26}
+                ,{ctor: "_Tuple2",_0: 28,_1: 27}
+                ,{ctor: "_Tuple2",_0: 28,_1: 28}
+                ,{ctor: "_Tuple2",_0: 29,_1: 24}
+                ,{ctor: "_Tuple2",_0: 30,_1: 25}
+                ,{ctor: "_Tuple2",_0: 31,_1: 24}
+                ,{ctor: "_Tuple2",_0: 32,_1: 23}
+                ,{ctor: "_Tuple2",_0: 32,_1: 24}
+                ,{ctor: "_Tuple2",_0: 32,_1: 25}
+                ,{ctor: "_Tuple2",_0: 32,_1: 26}
+                ,{ctor: "_Tuple2",_0: 32,_1: 27}
+                ,{ctor: "_Tuple2"
+                 ,_0: 32
+                 ,_1: 28}]),
+   $Time.every($Time.second / 10));
+   var aS = A2($Signal.map,
+   function (ls) {
+      return A2($Graphics$Collage.move,
+      A2(mutl,
+      14,
+      14)($float($List.head(ls))),
+      $Graphics$Collage.filled($Color.blue)(A2($Graphics$Collage.rect,
+      15.4,
+      13)));
+   },
+   animSig);
+   var animationS = A3($Signal.foldp,
+   F2(function (x,y) {
+      return A2($List._op["::"],
+      x,
+      y);
+   }),
+   _L.fromArray([]),
+   aS);
+   var POrg = {ctor: "POrg"};
+   var PRed = {ctor: "PRed"};
+   var DAnim = {ctor: "DAnim"};
+   var Anim = {ctor: "Anim"};
+   var Dec = {ctor: "Dec"};
+   var Inc = {ctor: "Inc"};
+   var Black = {ctor: "Black"};
+   var buttonCh = $Signal.channel(Black);
+   var Purple = {ctor: "Purple"};
+   var Green = {ctor: "Green"};
+   var Blue = {ctor: "Blue"};
+   var Red = {ctor: "Red"};
+   var view = F6(function (_v19,
+   paths,
+   _v20,
+   ngons,
+   pols,
+   animation) {
+      return function () {
+         return function () {
+            switch (_v19.ctor)
+            {case "_Tuple2":
+               return function () {
+                    var buttons = A3($Graphics$Element.container,
+                    _v19._0,
+                    _v19._1,
+                    $Graphics$Element.midBottom)($Graphics$Element.flow($Graphics$Element.right)(A2($List.intersperse,
+                    hspace,
+                    _L.fromArray([A3(myButton,
+                                 1,
+                                 A2($Signal.send,buttonCh,Red),
+                                 "")
+                                 ,A3(myButton,
+                                 2,
+                                 A2($Signal.send,buttonCh,Blue),
+                                 "")
+                                 ,A3(myButton,
+                                 3,
+                                 A2($Signal.send,buttonCh,Green),
+                                 "")
+                                 ,A3(myButton,
+                                 4,
+                                 A2($Signal.send,
+                                 buttonCh,
+                                 Purple),
+                                 "")
+                                 ,A3(myButton,
+                                 5,
+                                 A2($Signal.send,buttonCh,Black),
+                                 "")
+                                 ,A3(myButton,
+                                 0,
+                                 A2($Signal.send,buttonCh,Inc),
+                                 "+")
+                                 ,A3(myButton,
+                                 0,
+                                 A2($Signal.send,buttonCh,Dec),
+                                 "-")
+                                 ,A3(myButton,
+                                 0,
+                                 A2($Signal.send,buttonCh,Anim),
+                                 "Anim")
+                                 ,A3(myButton,
+                                 0,
+                                 A2($Signal.send,buttonCh,DAnim),
+                                 "DAnim")
+                                 ,A3(myButton,
+                                 6,
+                                 A2($Signal.send,buttonCh,PRed),
+                                 "PRed")
+                                 ,A3(myButton,
+                                 7,
+                                 A2($Signal.send,buttonCh,POrg),
+                                 "POrg")]))));
+                    var ngons$ = A3(toNgons,
+                    ngons,
+                    _v20.color,
+                    _v20.size);
+                    var $float = function (_v25) {
+                       return function () {
+                          switch (_v25.ctor)
+                          {case "_Tuple2":
+                             return {ctor: "_Tuple2"
+                                    ,_0: $Basics.toFloat(_v25._0)
+                                    ,_1: $Basics.toFloat(0 - _v25._1)};}
+                          _U.badCase($moduleName,
+                          "on line 121, column 22 to 43");
+                       }();
+                    };
+                    var pathForms = $Graphics$Collage.group(A2($List.map,
+                    function ($) {
+                       return $Graphics$Collage.traced(A2(thickLine,
+                       _v20.color,
+                       _v20.size))($Graphics$Collage.path($List.map($float)($)));
+                    },
+                    paths));
+                    var pol = $Graphics$Collage.filled(_v20.pcolor)($Graphics$Collage.polygon(A2($List.map,
+                    $float,
+                    pols)));
+                    var picture = A3($Graphics$Collage.collage,
+                    _v19._0,
+                    _v19._1,
+                    _L.fromArray([A2($Graphics$Collage.move,
+                    $float({ctor: "_Tuple2"
+                           ,_0: (0 - _v19._0) / 2 | 0
+                           ,_1: (0 - _v19._1) / 2 | 0}),
+                    pathForms)]));
+                    var ngon = A3($Graphics$Collage.collage,
+                    _v19._0,
+                    _v19._1,
+                    _L.fromArray([A2($Graphics$Collage.move,
+                    $float({ctor: "_Tuple2"
+                           ,_0: (0 - _v19._0) / 2 | 0
+                           ,_1: (0 - _v19._1) / 2 | 0}),
+                    ngons$)]));
+                    var polyg = A3($Graphics$Collage.collage,
+                    _v19._0,
+                    _v19._1,
+                    _L.fromArray([A2($Graphics$Collage.move,
+                    $float({ctor: "_Tuple2"
+                           ,_0: (0 - _v19._0) / 2 | 0
+                           ,_1: (0 - _v19._1) / 2 | 0}),
+                    pol)]));
+                    var animation$ = _U.eq(_v20.anim,
+                    false) ? A2($Graphics$Element.spacer,
+                    0,
+                    0) : A3($Graphics$Collage.collage,
+                    _v19._0,
+                    _v19._1,
+                    _L.fromArray([A2($Graphics$Collage.move,
+                    $float({ctor: "_Tuple2"
+                           ,_0: (0 - _v19._0) / 2 | 0
+                           ,_1: (0 - _v19._1) / 2 | 0}),
+                    $Graphics$Collage.group(animation))]));
+                    return $Graphics$Element.flow($Graphics$Element.outward)(A2($List.intersperse,
+                    hspace,
+                    _L.fromArray([ngon
+                                 ,polyg
+                                 ,animation$
+                                 ,picture
+                                 ,buttons
+                                 ,$Text.leftAligned($Text.color($Color.darkGreen)($Text.italic($Text.fromString(" \r\n                    WASD  : polygons\r\n                    Space : ngons\r\n                    Mouse : Draw"))))])));
+                 }();}
+            _U.badCase($moduleName,
+            "between lines 121 and 153");
+         }();
+      }();
+   });
+   var initstate = {_: {}
+                   ,anim: false
+                   ,color: $Color.black
+                   ,pcolor: $Color.green
+                   ,size: 5};
+   var State = F4(function (a,
+   b,
+   c,
+   d) {
+      return {_: {}
+             ,anim: c
+             ,color: a
+             ,pcolor: d
+             ,size: b};
+   });
+   var main = A2($Signal._op["~"],
+   A2($Signal._op["~"],
+   A2($Signal._op["~"],
+   A2($Signal._op["~"],
+   A2($Signal._op["~"],
+   A2($Signal._op["<~"],
+   view,
+   $Window.dimensions),
+   A2($Signal.map,
+   $Dict.values,
+   A3($Signal.foldp,
+   addN,
+   $Dict.empty,
+   $Touch.touches))),
+   A3($Signal.foldp,
+   upstate,
+   initstate,
+   $Signal.subscribe(buttonCh))),
+   A3($Signal.foldp,
+   F2(function (x,y) {
+      return A2($List._op["::"],
+      x,
+      y);
+   }),
+   _L.fromArray([]),
+   A2($Signal.sampleOn,
+   $Keyboard.space,
+   $Mouse.position))),
+   A3($Signal.foldp,
+   F2(function (x,y) {
+      return A2($List._op["::"],
+      x,
+      y);
+   }),
+   _L.fromArray([]),
+   A2($Signal.sampleOn,
+   A2($Signal.map,
+   function (_) {
+      return _.x;
+   },
+   $Keyboard.wasd),
+   $Mouse.position))),
+   animationS);
+   _elm.Main.values = {_op: _op
+                      ,main: main
+                      ,State: State
+                      ,initstate: initstate
+                      ,Red: Red
+                      ,Blue: Blue
+                      ,Green: Green
+                      ,Purple: Purple
+                      ,Black: Black
+                      ,Inc: Inc
+                      ,Dec: Dec
+                      ,Anim: Anim
+                      ,DAnim: DAnim
+                      ,PRed: PRed
+                      ,POrg: POrg
+                      ,buttonCh: buttonCh
+                      ,animationS: animationS
+                      ,aS: aS
+                      ,animSig: animSig
+                      ,upstate: upstate
+                      ,addN: addN
+                      ,add1: add1
+                      ,toNgons: toNgons
+                      ,view: view
+                      ,btnW: btnW
+                      ,btnH: btnH
+                      ,myButton: myButton
+                      ,strStyle: strStyle
+                      ,lineStyle: lineStyle
+                      ,hspace: hspace
+                      ,thickLine: thickLine
+                      ,shiftList: shiftList
+                      ,$float: $float
+                      ,mutl: mutl};
+   return _elm.Main.values;
+};

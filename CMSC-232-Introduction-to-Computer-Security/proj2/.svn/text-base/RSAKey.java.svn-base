@@ -1,0 +1,267 @@
+import java.math.BigInteger;
+import java.util.Arrays;
+
+public class RSAKey {
+    private BigInteger exponent;
+    private BigInteger modulus;
+    
+    private static final int oaepK0 = 32;
+    private static final int oaepK1 = 32;
+    
+    public RSAKey(BigInteger theExponent, BigInteger theModulus) {
+        exponent = theExponent;
+        modulus = theModulus;
+    }
+    
+    public BigInteger getExponent() {
+        return exponent;
+    }
+
+    public BigInteger getModulus() {
+        return modulus;
+    }
+
+    public byte[] encrypt(byte[] plaintext, PRGen prgen) {
+        if (plaintext == null)    throw new NullPointerException();
+
+		byte[] encoded = encodeOaep(plaintext,prgen);
+	
+		BigInteger m = Proj2Util.bytesToBigInteger(encoded);
+		BigInteger encryptedInt = m.modPow(exponent,modulus);
+		
+		byte[] encrypted = Proj2Util.bigIntegerToBytes(encryptedInt,plaintext.length+oaepK0+oaepK1);
+	
+		return encrypted;
+    }
+
+    public byte[] decrypt(byte[] ciphertext) {
+        if (ciphertext == null)    throw new NullPointerException();
+
+        BigInteger c = Proj2Util.bytesToBigInteger(ciphertext);
+        BigInteger decryptedInt = c.modPow(exponent,modulus);
+
+		byte[] decrypted = Proj2Util.bigIntegerToBytes(decryptedInt,ciphertext.length);
+	
+		byte[] decoded = decodeOaep(decrypted);
+	
+		return decoded;
+    }
+
+    public byte[] sign(byte[] message, PRGen prgen) {
+        // Create a digital signature on <message>. The signature need
+        //     not contain the contents of <message>--we will assume
+        //     that a party who wants to verify the signature will already
+        //     know which message this is (supposed to be) a signature on.
+        if (message == null)    throw new NullPointerException();
+
+        // hash the message for encryption
+		byte[] hash = Proj2Util.stretchedHash(message,maxPlaintextLength());
+		
+		// sign (a.k.a encrypt)
+		byte[] sign = encrypt(hash,prgen);
+		
+		return sign;
+    }
+
+    public boolean verifySignature(byte[] message, byte[] signature) {
+        // Verify a digital signature. Returns true if  <signature> is
+        //     a valid signature on <message>; returns false otherwise.
+        //     A "valid" signature is one that was created by calling
+        //     <sign> with the same message, using the other RSAKey that
+        //     belongs to the same RSAKeyPair as this object.
+        if ((message == null) || (signature == null))    throw new NullPointerException();
+
+        // get h'
+        byte[] h = decrypt(signature);
+        
+        // get hash of message
+        byte[] hash = Proj2Util.stretchedHash(message,maxPlaintextLength());
+        
+        // compare if h' == h(m)
+        return Arrays.equals(h,hash);
+        
+    }
+
+    public int maxPlaintextLength() {
+        // Return the largest N such that any plaintext of size N bytes
+        //      can be encrypted with this key
+	
+		// return n-k0-k1 where n==bytes in modulus 
+        return (modulus.bitLength()/8) - oaepK0 - oaepK1; 
+    }
+       
+    // The next four methods are public to help us grade the assignment. In real life, these would
+    // be private methods as there's no need to expose these methods as part of the public API
+    
+    public byte[] encodeOaep(byte[] input, PRGen prgen) {
+		// pad message with k1 zeroes
+		byte[] messpad = new byte[input.length + oaepK1];
+		for(int i = 0; i < input.length; i++)
+		    messpad[i] = input[i];
+	
+		// generate "random" seed r
+		byte[] r = new byte[oaepK0];
+		prgen.nextBytes(r);
+	
+		// generate the PRGen "G", and seed with r
+		PRGen genG = new PRGen(r);
+	
+		//generate X
+		byte[] toXor = new byte[input.length + oaepK1];
+		genG.nextBytes(toXor);
+	
+		byte[] X = new byte[input.length + oaepK1];
+		for(int k = 0; k < (input.length + oaepK1); k++)
+		    X[k] = (byte)(messpad[k] ^ toXor[k]);
+	
+		// generate Y
+		byte[] toXor2 = new byte[oaepK0];
+		toXor2 = Proj2Util.hash(X);
+	
+		byte[] Y = new byte[oaepK0];
+		for(int j = 0; j < oaepK0; j++)
+		    Y[j] = (byte)(r[j] ^ toXor2[j]);
+
+		//return concatenation of X & Y
+		byte[] encoded = new byte[input.length+oaepK1+oaepK0];
+		for(int x = 0; x < (input.length + oaepK1); x++)
+		    encoded[x] = X[x];
+		for(int y = 0; y < oaepK0; y++)
+		    encoded[input.length + oaepK1 + y] = Y[y];
+	
+		
+		return encoded;
+    }
+    
+    public byte[] decodeOaep(byte[] input) {
+		// get X & Y
+		int Xlen = input.length - oaepK0;
+		int Ylen = oaepK0;
+		
+		byte[] X = new byte[Xlen];
+		byte[] Y = new byte[Ylen];
+	
+		for(int i = 0; i < Xlen; i++)
+		    X[i] = input[i];
+		for(int k = 0; k < Ylen; k++)
+		    Y[k] = input[Xlen+k];
+	
+		// recover "random" seed r
+		byte[] toXor = new byte[oaepK0];
+	        toXor = Proj2Util.hash(X);
+	
+		byte[] r = new byte[oaepK0];
+		for(int j = 0; j < oaepK0; j++)
+		    r[j] = (byte)(Y[j] ^ toXor[j]);
+	
+		// seed new PRGen using acquired r
+		PRGen genG = new PRGen(r);
+	
+		// recover m || 000...
+		byte[] toXor2 = new byte[Xlen];
+		genG.nextBytes(toXor2);
+	
+		byte[] mPadded = new byte[Xlen];
+		for(int h = 0; h < Xlen; h++)
+		    mPadded[h] = (byte)(X[h] ^ toXor2[h]);
+	
+		//return original message
+		byte[] message = new byte[Xlen-oaepK1];
+		for(int m = 0; m < (Xlen-oaepK1); m++)
+		    message[m] = mPadded[m];
+	
+		return message;
+    }
+    
+    public byte[] addPadding(byte[] input) {
+		byte[] pad = new byte[maxPlaintextLength()];
+		
+		for(int i = 0; i < input.length; i++) 
+		    pad[i] = input[i];
+		
+		return pad;
+    }
+    
+    public byte[] removePadding(byte[] input) {
+
+		return null;
+    }
+
+    public static void main(String[] argv) {
+    	// TEST: if encryption works
+		byte[] key1 = new byte[32];
+		for(int i = 0; i < 32; i++)
+		    key1[i] = (byte)i;
+	
+		byte[] key2 = new byte[32];
+	    for(int i2 = 0; i2 < 32; i2++)
+	        key2[i2] = (byte)(i2+1);
+		
+		PRGen prg = new PRGen(key1);
+		PRGen prgen = new PRGen(key2);
+	
+		RSAKeyPair kp = new RSAKeyPair(prg,1024);
+		RSAKey pu = kp.getPublicKey();
+		RSAKey pr = kp.getPrivateKey();
+	
+		byte[] input = new byte[192];
+		for(int l = 0; l < 192; l++)
+		    input[l] = (byte)l;
+	
+		
+		byte[] encoded = pu.encrypt(input,prgen);
+	
+		// print original message
+		for(int x = 0; x < input.length; x++){
+		    System.out.print(input[x]);
+		    System.out.print(" ");
+		}
+		// print encrypted message
+		System.out.print('\n');
+		for(int y = 0; y < encoded.length; y++){
+		    System.out.print(encoded[y]);
+	        System.out.print(" ");
+	    }
+		System.out.print('\n');
+		
+		// print decrypted decoded message
+		byte[] decoded = new byte[input.length];
+		decoded = pr.decrypt(encoded);
+	
+		for(int z = 0; z < input.length; z++){
+	            System.out.print(decoded[z]);
+	            System.out.print(" ");
+	        }
+		System.out.print('\n');
+		
+		//TEST: if signing works
+		byte[] keyS = new byte[32];
+		for(int s = 0; s < 32; s++)
+		    keyS[s] = (byte)s;
+	
+		byte[] keyS2 = new byte[32];
+	    for(int s2 = 0; s2 < 32; s2++)
+	        keyS2[s2] = (byte)(s2+1);
+		
+		PRGen prgS = new PRGen(keyS);
+		PRGen prgenS = new PRGen(keyS2);
+	
+		RSAKeyPair kpS = new RSAKeyPair(prgS,1024);
+		RSAKey puS = kpS.getPublicKey();
+		RSAKey prS = kpS.getPrivateKey();
+	
+		byte[] message = new byte[192];
+		for(int ls = 0; ls < 192; ls++)
+		    input[ls] = (byte)ls;
+		
+		// should be true
+		byte[] signature = prS.sign(message, prgenS);
+		boolean ok = puS.verifySignature(message, signature);
+		System.out.println(ok);
+		
+		//should be false
+		boolean notOk = puS.verifySignature(input, signature);
+		System.out.println(notOk);
+		
+    }
+}

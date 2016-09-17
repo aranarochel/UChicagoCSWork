@@ -1,0 +1,653 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-intermediate-lambda-reader.ss" "lang")((modname project1) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ())))
+;; Jaime Arana-Rochel
+;; aranarochel
+;; CS151 Autumn 2012, Project 1
+
+(require 2htdp/image)
+(require racket/match)
+
+
+;; === Data Definitions ===
+
+;; a vec3 is a (make-vec3 x y z) for x, y, z numbers
+(define-struct vec3 (x y z))
+
+;; an rgb is a (make-rgb r g b)
+;; for r, g, b numbers on [0,1]
+(define-struct rgb (r g b))
+
+;; a ray is a (make-ray origin dir)
+;; where origin is a vec3 representing a position, and
+;;       dir (direction) is a unit vec3
+(define-struct ray (origin dir))
+
+;; a sphere is a (make-sphere center radius color)
+;; where center is a vec3 used to represent a position, 
+;;       radius is a num, 
+;;       color is an rgb
+(define-struct sphere (center radius color))
+
+;; a light is a (make-light v color)
+;; where v is a vec3 (a unit vector pointing at the light), and
+;;       color is an rgb
+(define-struct light (v color))
+
+;; a scene is a (make-scene bg-color spheres light amb)
+;; where bg-color is an rgb, 
+;;       spheres is a list of spheres,
+;;       light is a light, and 
+;;       amb (ambient light color) is an rgb
+(define-struct scene (bg-color spheres light amb))
+
+;; a camera is a (make-camera z img-w img-h)
+;; where z, img-w and img-h are numbers
+;; img-w and img-h are the dimensions of the view plane
+;; notes: - camera is located at (0,0,z)
+;;        - z is typically a small negative number, like -2
+(define-struct camera (z img-w img-h))
+
+;; a hit-test is either
+;; - 'miss, or
+;; - (make-hit dist surf-color surf-normal)
+;;   where dist is a num, 
+;;         surf-color is an rgb, and
+;;         surf-normal is a (unit) vec3
+(define-struct hit (dist surf-color surf-normal))
+
+
+;; === Vec3 & RGB Operations ===
+
+;; vec3+ : vec3 vec3 -> vec3
+;; adds two vectors, given two vectors
+(define (vec3+ v1 v2)
+  (make-vec3
+   (+ (vec3-x v1) (vec3-x v2))
+   (+ (vec3-y v1) (vec3-y v2))
+   (+ (vec3-z v1) (vec3-z v2))))
+(check-expect (vec3+ (make-vec3 1 1 1) (make-vec3 1 1 1)) (make-vec3 2 2 2))
+(check-expect (vec3+ (make-vec3 2 3 4) (make-vec3 5 6 7)) (make-vec3 7 9 11))
+
+
+;; vec3- : vec3 vec3 : vec3
+;; subtracts two vectors, given two vectors
+(define (vec3- v1 v2)
+  (make-vec3
+   (- (vec3-x v1) (vec3-x v2))
+   (- (vec3-y v1) (vec3-y v2))
+   (- (vec3-z v1) (vec3-z v2))))
+(check-expect (vec3- (make-vec3 1 1 1) (make-vec3 1 1 1)) (make-vec3 0 0 0))
+(check-expect (vec3- (make-vec3 2 3 4) (make-vec3 5 6 7)) (make-vec3 -3 -3 -3))
+
+
+;; vec3-neg : vec3 -> vec3
+;; negates a vector
+(define (vec3-neg v)
+  (make-vec3
+   (- (vec3-x v))
+   (- (vec3-y v))
+   (- (vec3-z v))))
+(check-expect (vec3-neg (make-vec3 -1 1 1)) (make-vec3 1 -1 -1))
+(check-expect (vec3-neg (make-vec3 6 10 -90)) (make-vec3 -6 -10 90))
+
+;; vec3-scale : num vec3 -> vec3
+;; scales (multiplies) a vector by a given scalar
+(define (vec3-scale n v)
+  (make-vec3
+   (* n (vec3-x v))
+   (* n (vec3-y v))
+   (* n (vec3-z v))))
+(check-expect (vec3-scale 1 (make-vec3 2 2 2)) (make-vec3 2 2 2))
+(check-expect (vec3-scale 2 (make-vec3 1 2 3)) (make-vec3 2 4 6))
+
+;; vec3-dot : vec3 vec3 -> num
+;; produces a scalar by performing a dot product on two vectors
+(define (vec3-dot v1 v2)
+  (+
+   (* (vec3-x v1) (vec3-x v2))
+   (* (vec3-y v1) (vec3-y v2))
+   (* (vec3-z v1) (vec3-z v2))))
+(check-expect (vec3-dot (make-vec3 1 1 1) (make-vec3 1 1 1)) 3)
+(check-expect (vec3-dot (make-vec3 0 0 0) (make-vec3 1 1 1)) 0)
+
+
+;; vec3-mag : vec3 -> num
+;; Computes the magnitude (lenght) of a given vector
+(define (vec3-mag v)
+  (sqrt
+   (+ (sqr (vec3-x v))
+      (sqr (vec3-y v))
+      (sqr (vec3-z v)))))
+(check-expect (vec3-mag (make-vec3 0 0 0)) 0)
+(check-expect (vec3-mag (make-vec3 0 3 4)) 5)
+
+
+;; vec3-unit? : vec3 -> bool
+;; tests if a given vector is a unit vector (has magnitude 1)
+(define (vec3-unit? v)
+  (<= (abs (- 1 (vec3-mag v))) 0.00000001))
+(check-expect (vec3-unit? (make-vec3 1 1 1)) false)
+(check-expect (vec3-unit? (make-vec3 1 0 0)) true)
+
+;; vec3-zero? : vec3 -> bool
+;; tests if a given vector has magnitude zero
+(define (vec3-zero? v)
+  (= (vec3-mag v) 0))
+(check-expect (vec3-zero? (make-vec3 1 1 1)) false)
+(check-expect (vec3-zero? (make-vec3 0 0 0)) true)
+
+;; vec3-norm : vec3 -> vec3
+;; Normalizes the vector i.e computes a unit vector pointing in the same
+;; direction as the given vector
+(define (vec3-norm v)
+  (make-vec3
+   (/ (vec3-x v) (vec3-mag v))
+   (/ (vec3-y v) (vec3-mag v))
+   (/ (vec3-z v) (vec3-mag v))))
+(check-expect (vec3-norm (make-vec3 4 4 2)) (make-vec3 4/6 4/6 2/6))
+(check-expect (vec3-norm (make-vec3 0 3 4)) (make-vec3 0 3/5 4/5))
+
+
+;; color->rgb : color -> rgb
+;; converts color values into rgb values
+(define (color->rgb c)
+  (make-rgb
+   (/ (color-red c) 255)
+   (/ (color-green c) 255)
+   (/ (color-blue c) 255)))
+(check-expect (color->rgb (make-color 255 255 255)) (make-rgb 1 1 1))
+(check-expect (color->rgb (make-color 0 0 0)) (make-rgb 0 0 0))
+
+
+;; rgb->color : rgb -> color
+;; converts rgb values into color values
+(define (rgb->color c)
+  (make-color
+   (floor (inexact->exact (* 255 (rgb-r c))))
+   (floor (inexact->exact (* 255 (rgb-g c))))
+   (floor (inexact->exact (* 255 (rgb-b c))))))
+(check-expect (rgb->color (make-rgb 0 0 0)) (make-color 0 0 0))
+(check-expect (rgb->color (make-rgb 1 1 1)) (make-color 255 255 255))
+
+
+;; rgb-modulate : rgb rgb -> rgb
+;; pointwise multiplies two given rgb's
+(define (rgb-modulate c1 c2)
+  (make-rgb 
+   (* (rgb-r c1) (rgb-r c2))
+   (* (rgb-g c1) (rgb-g c2))
+   (* (rgb-b c1) (rgb-b c2))))
+(check-expect (rgb-modulate (make-rgb 0 0 0) (make-rgb 1 1 1)) (make-rgb 0 0 0))
+(check-expect (rgb-modulate (make-rgb .5 .5 .5) (make-rgb 1 1 1)) (make-rgb .5 .5 .5))
+
+
+;; num-clamp : num -> num
+;; Limits a given number on the interval [0,1]
+(define (num-clamp n)
+  (cond
+    [(< n 0) 0]
+    [(> n 1) 1]
+    [else n]))
+(check-expect (num-clamp -1) 0)
+(check-expect (num-clamp 2) 1)
+(check-expect (num-clamp .5) .5)
+
+
+;; rgb-scale : num rgb -> rgb
+;; scales each component by a given scalar
+(define (rgb-scale n c)
+ (make-rgb
+  (num-clamp (* n (rgb-r c)))
+  (num-clamp (* n (rgb-g c)))
+  (num-clamp (* n (rgb-b c)))))
+(check-expect (rgb-scale 2 (make-rgb 1 1 1)) (make-rgb 1 1 1))
+(check-expect (rgb-scale -2 (make-rgb 1 1 1)) (make-rgb 0 0 0))
+(check-expect (rgb-scale .5 (make-rgb 1 1 1)) (make-rgb .5 .5 .5))
+
+;; rgb+ : rgb rgb -> rgb
+;; adds two given rgb values
+(define (rgb+ c1 c2)
+  (make-rgb
+   (num-clamp (+ (rgb-r c1) (rgb-r c2)))
+   (num-clamp (+ (rgb-g c1) (rgb-g c2)))
+   (num-clamp (+ (rgb-b c1) (rgb-b c2)))))
+(check-expect (rgb+ (make-rgb 1 1 1) (make-rgb 1 1 1)) (make-rgb 1 1 1))
+(check-expect (rgb+ (make-rgb .1 .2 .3) (make-rgb .1 .2 .3)) (make-rgb .2 .4 .6))
+
+
+;; === Rays and the View Plane ===
+
+;; ray-position : ray num -> vec3
+;; position on r at t
+(define (ray-position r t)
+  (vec3+ (ray-origin r) (vec3-scale t (ray-dir r))))
+(check-expect (ray-position (make-ray
+                             (make-vec3 0 0 0)
+                             (make-vec3 1 2 3)) 2)
+              (make-vec3 2 4 6))
+
+
+;; logical-loc : camera posn -> vec3
+;; computes the logical location in the logical view plane
+;; given a camera and a location in the physical view
+(define (logical-loc c p)
+  (local {(define pixel-w (/ 2 (camera-img-w c)))
+          (define pixel-h (/ 2 (camera-img-w c)))}
+    (cond
+      [(= (camera-img-w c) (camera-img-h c))
+       (make-vec3
+        (+ -1 (/ pixel-w 2) (* pixel-w (posn-x p)))
+        (- 1 (/ pixel-w 2) (* pixel-w (posn-y p)))
+        0)]
+      [(> (camera-img-w c) (camera-img-h c))
+       (make-vec3
+        (+ -1 (/ pixel-w 2) (* pixel-w (posn-x p)))
+        (- (/ (camera-img-h c) (camera-img-w c)) (/ pixel-w 2)
+           (* pixel-w (posn-y p)))
+        0)]
+      [(< (camera-img-w c) (camera-img-h c))
+       (make-vec3
+        (+ (- (/ (camera-img-w c) (camera-img-h c)))
+           (/ pixel-h 2) (* pixel-h (posn-x p)))
+        (- 1 (/ pixel-h 2) (* pixel-h (posn-y p)))
+        0)])))
+
+(check-expect (logical-loc (make-camera -2 30 20) (make-posn 0 0))
+              (make-vec3 -29/30 19/30 0))
+(check-expect (logical-loc (make-camera -2 10 10) (make-posn 5 5))
+              (make-vec3 .1 -.1 0))
+(check-expect (logical-loc (make-camera -2 10 14) (make-posn 0 0))
+              (make-vec3 -43/70 .9 0))
+
+
+;; === Intersection Testing ===
+
+;; intersect : ray sphere -> hit-test
+;; tests whether or not rays intersect objects
+(define (intersect r s)
+  (local {(define ro (ray-origin r))
+          (define rd (ray-dir r))
+          (define sc (sphere-center s))
+          (define sr (sphere-radius s))
+          (define A (vec3- ro sc))
+          (define B (vec3-dot A rd))
+          (define C (- (vec3-dot A A) (* sr sr)))
+          (define D (- (* B B) C))
+          (define t (- (- 0 B) (sqrt D)))}
+    (cond
+      [(and (> D 0) (> t 0))
+       (make-hit 
+        t (sphere-color s) 
+        (vec3-norm (vec3- (ray-position r t) (sphere-center s))))]
+      [(and (> D 0) (<= t 0)) 'miss]
+      [else 'miss])))
+
+(check-expect (intersect (make-ray (make-vec3 0 0 0) (make-vec3 0 0 1))
+                         (make-sphere (make-vec3 0 0 4) 2 (make-rgb 0 0 0)))
+              (make-hit 2 (make-rgb 0 0 0) (make-vec3 0 0 -1)))
+(check-expect (intersect (make-ray (make-vec3 0 0 0) (make-vec3 0 0 1))
+                         (make-sphere (make-vec3 2 0 0) 1 (make-rgb 0 0 0)))
+              'miss)
+
+
+;; === Lighting ===
+
+;; close-hit : ray (listof spheres) -> hit-test
+;; determines the closest hit, if any
+(define (close-hit r ss)
+  (local {(define (list-hit r ss)
+            (filter hit? (map (lambda (s) (intersect r s)) ss)))}
+    (cond
+      [(empty? (list-hit r ss)) 'miss]
+      [else
+       (cond
+         [(empty? (rest (list-hit r ss))) (first (list-hit r ss))]
+         [else
+          (if (< (hit-dist (first (list-hit r ss)))
+                 (hit-dist (first (rest (list-hit r ss)))))
+              (first (list-hit r ss))
+              (close-hit r (rest ss)))])])))
+
+(check-expect (close-hit 
+               (make-ray (make-vec3 0 0 0) (make-vec3 0 0 1))
+               (list
+                (make-sphere (make-vec3 0 0 3) 1 (make-rgb 0 0 0))))
+              (make-hit 2 (make-rgb 0 0 0) (make-vec3 0 0 -1)))
+(check-expect (close-hit 
+               (make-ray (make-vec3 0 0 0) (make-vec3 0 0 1))
+               (list
+                (make-sphere (make-vec3 0 0 3) 1 (make-rgb 0 0 0))
+                (make-sphere (make-vec3 0 0 10) 1 (make-rgb 0 0 0))
+                (make-sphere (make-vec3 0 -1 15) 2 (make-rgb 0 0 0))))
+              (make-hit 2 (make-rgb 0 0 0) (make-vec3 0 0 -1)))
+(check-expect (close-hit 
+               (make-ray (make-vec3 0 0 0) (make-vec3 0 0 1))
+               (list
+                (make-sphere (make-vec3 0 0 20) 1 (make-rgb 0 0 0))
+                (make-sphere (make-vec3 0 0 3) 1 (make-rgb 0 0 0))))
+              (make-hit 2 (make-rgb 0 0 0) (make-vec3 0 0 -1)))
+(check-expect (close-hit (make-ray (make-vec3 0 0 0) (make-vec3 0 0 1))
+                         (list (make-sphere (make-vec3 0 2 0) 1 (make-rgb 0 0 0))))
+              'miss)
+
+
+;; shadowed? : vec3 light (listof sphere) -> bool
+;; tests if a hit point is in shadow
+(define (shadowed? p l ss)
+  (cond
+    [(empty? ss) false]
+    [(cons? ss)
+     (cond
+       [(hit? 
+         (close-hit 
+          (make-ray (vec3+ p (vec3-scale .0001 (light-v l))) (light-v l)) ss))
+        true]
+       [else false])]))
+
+(check-expect (shadowed? 
+               (make-vec3 0 0 1)
+               (make-light (make-vec3 0 1 0) (make-rgb 0 0 0))
+               (list (make-sphere (make-vec3 0 3 1) 1 (make-rgb 0 0 0)))) true)
+(check-expect (shadowed? 
+               (make-vec3 0 0 1)
+               (make-light (make-vec3 0 1 0) (make-rgb 0 0 0))
+               (list (make-sphere (make-vec3 0 0 0) 1 (make-rgb 0 0 0))
+                     (make-sphere (make-vec3 0 10 0) 5 (make-rgb 0 0 0)))) true)
+(check-expect (shadowed? 
+               (make-vec3 0 0 2)
+               (make-light (make-vec3 0 1 0) (make-rgb 0 0 0))
+               (list (make-sphere (make-vec3 0 0 0) 1 (make-rgb 0 0 0))
+                     (make-sphere (make-vec3 0 10 0) 1 (make-rgb 0 0 0)))) false)
+(check-expect (shadowed?
+               (make-vec3 0 0 1)
+               (make-light (make-vec3 0 1 0) (make-rgb 0 0 0))
+               empty) false)
+
+
+;; lighting : scene ray hit-test -> rgb
+;; Compute the color for the hit test.
+;; If hit-test is a miss, the color is the scene's background color.
+;; Otherwise, it is determined by diffuse lighting (see below) at hit point
+(define (lighting sc r t)
+  (local {(define hit-point (close-hit r (scene-spheres sc)))} 
+    (cond
+      [(equal? 'miss hit-point)
+       (scene-bg-color sc)]
+      [else
+       (cond
+         [(shadowed? (ray-position r (hit-dist hit-point)) 
+                     (scene-light sc) (scene-spheres sc))
+          (rgb-modulate (hit-surf-color hit-point) (scene-amb sc))]
+         [else
+          (local {(define diff-light 
+            (rgb-scale (max 0 (vec3-dot (hit-surf-normal hit-point)
+                                        (light-v (scene-light sc))))
+                       (light-color (scene-light sc))))}
+            (rgb-modulate (hit-surf-color hit-point)
+                          (rgb+ (scene-amb sc) diff-light)))])])))
+
+(check-within (lighting
+               (make-scene
+                rgb:darkgray
+                (list 
+                 (make-sphere (make-vec3 0 0 3) 1 rgb:orange))
+                (make-light (vec3-norm (make-vec3 -1 1 -1)) rgb:white)
+                (make-rgb 0.2 0.2 0.2))
+               (make-ray (make-vec3 0 0 0) (make-vec3 0 0 1))
+               'miss)
+              (make-rgb #i0.7773502691896259 #i0.5029913506521109 0) .00001)
+(check-expect (lighting
+               (make-scene
+                rgb:darkgray
+                (list 
+                 (make-sphere (make-vec3 0 5 0) 1 rgb:orange))
+                (make-light (vec3-norm (make-vec3 -1 1 -1)) rgb:white)
+                (make-rgb 0.2 0.2 0.2))
+               (make-ray (make-vec3 0 0 0) (make-vec3 0 0 1))
+               'miss)
+              (make-rgb 169/255 169/255 169/255))
+(check-expect (lighting
+               (make-scene
+                rgb:darkgray
+                (list 
+                 (make-sphere (make-vec3 0 0 3) 1 rgb:orange)
+                 (make-sphere (make-vec3 0 3 3) 1 rgb:white))
+                (make-light (vec3-norm (make-vec3 0 1 0)) rgb:white)
+                (make-rgb 0.2 0.2 0.2))
+               (make-ray (make-vec3 0 0 0) (make-vec3 0 0 1))
+               'miss)
+              (make-rgb .2 11/85 0))
+
+;; === Ray Tracing ===
+
+;; cam-ray : camera posn -> ray
+;; calculates the ray from the camera
+;; to a pixel on the view plane
+(define (cam-ray c p)
+  (make-ray (make-vec3 0 0 (camera-z c))
+            (vec3-norm (vec3- (logical-loc c p)
+                              (make-vec3 0 0 (camera-z c))))))
+(check-within (cam-ray (make-camera -2 10 10)
+                       (make-posn 5 5))
+              (make-ray
+               (make-vec3 0 0 -2)
+               (make-vec3 #i0.04987546680538165 
+                          #i-0.04987546680538165
+                          #i0.9975093361076329)) .00001)
+
+;; cam-pix : camera -> (listof (listof posn)
+;; calculates a list of lists of pixels on the
+;; view plane given a camera
+(define (cam-pix c)
+  (local {(define (list-p h w)
+            (build-list h
+                        (lambda (y)
+                          (build-list w
+                                      (lambda (x)
+                                        (make-posn x y))))))}
+    (list-p (camera-img-h c) (camera-img-w c))))
+(check-expect 
+ (cam-pix (make-camera -2 4 4))
+ (list
+  (list (make-posn 0 0) (make-posn 1 0) (make-posn 2 0) (make-posn 3 0))
+  (list (make-posn 0 1) (make-posn 1 1) (make-posn 2 1) (make-posn 3 1))
+  (list (make-posn 0 2) (make-posn 1 2) (make-posn 2 2) (make-posn 3 2))
+  (list (make-posn 0 3) (make-posn 1 3) (make-posn 2 3) (make-posn 3 3))))
+
+
+;; cam->rss : camera -> (listof (listof rays))
+;; creates a list of lists of rays that go from the camera
+;; to every pixel location on the view plane
+(define (cam->rss c)
+  (local {(define (pss->rss pss)
+            (map (lambda (ps) (map (lambda (p) (cam-ray c p)) ps)) pss))}
+(pss->rss (cam-pix c))))
+
+            
+   
+;; rgb-matrix->list : (listof (listof rgb)) -> (listof rgb)
+;; makes a single list of rgb from a list
+;; of lists of rgbs
+(define (rgb-matrix->list css)
+  (cond
+    [(empty? css) empty]
+    [(empty? (rest css)) (first css)]
+    [else 
+     (append (first css) (rgb-matrix->list (rest css)))]))
+(check-expect (rgb-matrix->list
+               (list (list (make-rgb 0 0 0))
+                     (list (make-rgb 1 1 1))
+                     (list (make-rgb .5 .5 .5))))
+              (list (make-rgb 0 0 0) (make-rgb 1 1 1) (make-rgb .5 .5 .5)))
+(check-expect (rgb-matrix->list empty) empty)
+
+
+;; rgb-matrix->image : (listof (listof rgb)) -> image
+;; generates an image from a list of lists or rgbs
+(define (rgb-matrix->image css)
+  (color-list->bitmap
+   (map rgb->color (rgb-matrix->list css))
+   (length css)
+   (length (first css))))
+
+"eyeball test: rgb-matrix->image"
+(scale 50 
+       (rgb-matrix->image
+        (list (list (make-rgb 0 0 0)) (list (make-rgb 1 0 1)))))
+(scale 50
+       (rgb-matrix->image
+        (list (list (make-rgb .1 .2 .3)) (list (make-rgb 1 .5 .7)))))
+
+
+;; trace-ray : scene ray -> rgb
+;; traces a ray from the camera into the scene
+(define (trace-ray sc r)
+  (lighting sc r 'miss))
+
+
+;; cam->rgbs : camera scene -> (listof (listof rgbs))
+;; given a camera and a scene, produces a
+;; list of lists of rgb values on the view plane
+(define (cam->rgbs c sc)
+  (map (lambda (rs) (map (lambda (r) (trace-ray sc r)) rs)) 
+       (cam->rss c)))
+
+
+;; render-scene : camera scene -> image
+;; renders a scene given a camera and a scene
+(define (render-scene c sc)
+  (rgb-matrix->image (cam->rgbs c sc)))
+
+
+;; === Gallery ===
+
+;; === rgb color constants, predefined for convenience ===
+
+(define rgb:white      (make-rgb 1 1 1))
+(define rgb:black      (make-rgb 0 0 0))
+(define rgb:gray       (make-rgb 38/51 38/51 38/51))
+(define rgb:darkgray   (make-rgb 169/255 169/255 169/255))
+(define rgb:red        (make-rgb 1 0 0))
+(define rgb:green      (make-rgb 0 1 0))
+(define rgb:blue       (make-rgb 0 0 1))
+(define rgb:pink       (make-rgb 1 64/85 203/255))
+(define rgb:silver     (make-rgb 64/85 64/85 64/85))
+(define rgb:ivory      (make-rgb 1 1 16/17))
+(define rgb:orange     (make-rgb 1 11/17 0))
+(define rgb:dodgerblue (make-rgb 2/17 48/85 1))
+(define rgb:skyblue    (make-rgb 9/17 206/255 47/51))
+(define rgb:navy       (make-rgb 36/255 36/255 140/255))
+
+;; === cameras
+
+(define cs151-12-test-camera-1 (make-camera -5 200 200))
+(define cs151-12-test-camera-2 (make-camera -8 200 200))
+(define cs151-12-test-camera-3 (make-camera -8 400 400))
+
+;; === scenes
+
+(define cs151-12-test-scene-1
+  (make-scene
+   rgb:darkgray
+   (list 
+    (make-sphere (make-vec3 0 0 3) 1 rgb:orange))
+   (make-light (vec3-norm (make-vec3 -1 1 -1)) rgb:white)
+   (make-rgb 0.2 0.2 0.2)))
+
+(define cs151-12-test-scene-2
+  (make-scene
+   rgb:darkgray
+   (list 
+    (make-sphere (make-vec3 0 0 6) 1 rgb:orange))
+   (make-light (vec3-norm (make-vec3 -1 1 -1)) rgb:white)
+   (make-rgb 0.2 0.2 0.2)))
+
+(define cs151-12-test-scene-3
+  (make-scene
+   rgb:navy
+   (list 
+    (make-sphere (make-vec3 0 0 6) 1 rgb:pink))
+   (make-light (vec3-norm (make-vec3 -1 1 -1)) rgb:white)
+   (make-rgb 0.2 0.2 0.2)))
+
+(define cs151-12-test-scene-4
+  (make-scene
+   rgb:navy
+   (list 
+    (make-sphere (make-vec3  3/2 0 8) 1 rgb:dodgerblue)
+    (make-sphere (make-vec3 -3/2 0 8) 1 rgb:dodgerblue))
+   (make-light (vec3-norm (make-vec3 -1 1 -1)) rgb:white)
+   (make-rgb 0.2 0.2 0.2)))
+
+(define cs151-12-test-scene-5
+  (make-scene
+   rgb:black
+   (list 
+    (make-sphere (make-vec3  3/2 0 8)  1 rgb:dodgerblue)
+    (make-sphere (make-vec3 -3/2 0 8)  1 rgb:dodgerblue)
+    (make-sphere (make-vec3    0 0 20) 1 rgb:silver))
+   (make-light (vec3-norm (make-vec3 -1 1 -1)) rgb:white)
+   (make-rgb 0.2 0.2 0.2)))
+
+(define cs151-12-test-scene-6
+  (make-scene
+   rgb:black
+   (list 
+    (make-sphere (make-vec3    1  -1  8) 1 rgb:dodgerblue)
+    (make-sphere (make-vec3   -1   1  8) 1 rgb:dodgerblue))
+   (make-light (vec3-norm (make-vec3 -1 1 -1)) rgb:white)
+   (make-rgb 0.2 0.2 0.2)))
+
+(define cs151-12-test-scene-7
+  (make-scene
+   rgb:black
+   (list 
+    (make-sphere (make-vec3    1    -1  8) 2 rgb:ivory)
+    (make-sphere (make-vec3   -1/3   1  5) 3/4 rgb:ivory))
+   (make-light (vec3-norm (make-vec3 -1 1 -1)) rgb:white)
+   (make-rgb 0.2 0.2 0.2)))
+
+(define cs151-12-test-scene-8
+  (make-scene
+   rgb:black
+   (list 
+    (make-sphere (make-vec3    1    -1  8) 2  rgb:ivory)
+    (make-sphere (make-vec3   -1/3   1  5) 3/4  rgb:ivory))
+   (make-light (vec3-norm (make-vec3 -1/2 1/1 -1))  rgb:red)
+   (make-rgb 0.2 0.2 0.2)))
+
+(define cs151-12-test-scene-9
+  (make-scene
+   rgb:black
+   (list 
+    (make-sphere (make-vec3 1 1 8) 2/3 rgb:gray)
+    (make-sphere (make-vec3 0 0 1) 1/2 rgb:skyblue))
+   (make-light (vec3-norm (make-vec3 -1 1 -1)) rgb:white)
+   (make-rgb 0.2 0.2 0.2)))
+
+;; === renderings
+
+(render-scene cs151-12-test-camera-1 cs151-12-test-scene-1)
+(render-scene cs151-12-test-camera-1 cs151-12-test-scene-2)
+(render-scene cs151-12-test-camera-1 cs151-12-test-scene-3)
+(render-scene cs151-12-test-camera-1 cs151-12-test-scene-4)
+(render-scene cs151-12-test-camera-1 cs151-12-test-scene-5)
+(render-scene cs151-12-test-camera-1 cs151-12-test-scene-6)
+(render-scene cs151-12-test-camera-1 cs151-12-test-scene-7)
+(render-scene cs151-12-test-camera-1 cs151-12-test-scene-8)
+(render-scene cs151-12-test-camera-2 cs151-12-test-scene-8)
+(render-scene cs151-12-test-camera-3 cs151-12-test-scene-8)
+(render-scene cs151-12-test-camera-1 cs151-12-test-scene-9)
+(render-scene cs151-12-test-camera-2 cs151-12-test-scene-9)
+(render-scene cs151-12-test-camera-3 cs151-12-test-scene-9)
+
+
+
+
+
+
+
+
+
+      

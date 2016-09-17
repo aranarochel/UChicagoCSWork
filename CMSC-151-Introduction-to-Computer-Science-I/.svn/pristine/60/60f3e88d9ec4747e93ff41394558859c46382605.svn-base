@@ -1,0 +1,342 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-intermediate-reader.ss" "lang")((modname hw2) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ())))
+;; Jaime Arana-Rochel
+;; aranarochel
+;; CS151 2012 Homework 2
+
+(require 2htdp/image)
+(require racket/match)
+
+
+;; Problem 1
+  
+;; a tri (triangle) is a (make-tri a b c)
+;; where a, b, and b are each a (make-posn x y)
+(define-struct tri (a b c))
+
+
+;; checked-make-tri : posn posn posn -> tri
+;; smart constructor for triangles, checks that the points are  
+;; distinct and colinear
+(define (checked-make-tri a b c)
+   (cond 
+     [(or (and (= (posn-x a) (posn-x b)) 
+           (= (posn-y a) (posn-y b)))
+          (and (= (posn-x a) (posn-x c)) 
+           (= (posn-y a) (posn-y c)))
+          (and (= (posn-x b) (posn-x c)) 
+           (= (posn-y b) (posn-y c))))
+      (error 'checked-make-tri "points identical")]
+     [(= (posn-x a) (posn-x b) (posn-x c)) 
+      (error 'checked-make-tri "points colinear")]
+     [(= (posn-y a) (posn-y b) (posn-y c)) 
+      (error 'checked-make-tri "points colinear")]
+     [else (make-tri a b c)]))
+(check-error (checked-make-tri (make-posn 1 0) (make-posn 1 2) (make-posn 1 3)))
+(check-error (checked-make-tri (make-posn 1 1) (make-posn 2 1) (make-posn 0 1)))
+(check-expect (checked-make-tri (make-posn 1 1) (make-posn 2 4) (make-posn 3 3))
+              (make-tri (make-posn 1 1) (make-posn 2 4) (make-posn 3 3)))
+(check-error (checked-make-tri (make-posn 1 1) (make-posn 1 1) (make-posn 2 3)))
+
+
+;; Problem 2
+
+;; triangle-area : tri -> num
+;; computes the area of a given triangle
+(define (triangle-area t)
+  (local {(define ab (sqrt (+ (sqr (- (posn-x (tri-a t)) (posn-x (tri-b t)))) 
+                              (sqr (- (posn-y (tri-a t)) (posn-y (tri-b t)))))))
+          (define ac (sqrt (+ (sqr (- (posn-x (tri-a t)) (posn-x (tri-c t)))) 
+                              (sqr (- (posn-y (tri-a t)) (posn-y (tri-c t)))))))
+          (define bc (sqrt (+ (sqr (- (posn-x (tri-b t)) (posn-x (tri-c t)))) 
+                              (sqr (- (posn-y (tri-b t)) (posn-y (tri-c t)))))))
+          (define s (/ (+ ab ac bc) 2))}
+    (sqrt (* s (- s ab) (- s ac) (- s bc)))))
+(check-within (triangle-area 
+               (make-tri (make-posn 0 1) (make-posn 2 1) (make-posn 2 3))) 2 .001)
+(check-within (triangle-area 
+               (make-tri (make-posn 0 0) (make-posn 4 0) (make-posn 4 4))) 8 .001)
+
+
+;; Problem 3
+
+;; a date is a (make-date m d y)
+;; for m (month) on [1,12], d (day) on [1,31], y (year) (>= y 1900)
+(define-struct date (m d y))
+
+
+;; checked-make-date : num num num -> date
+;; smart constructor for dates, makes sure
+;; given months, days, and years don't produce invalid dates
+(define (checked-make-date m d y)
+  (local {(define (m? m)
+            (cond
+              [(and (>= m 1) (<= m 12)) m]
+              [else (error 'm? "invalid month value")]))
+          (define (d? d) 
+            (cond
+              [(and (>= d 1) (<= d 31)) d]
+              [else (error 'd? "invalid day value")]))
+          (define (y? y) 
+            (cond
+              [(>= y 1900) y]
+              [else (error 'y? "invalid year value")]))}
+    (make-date (m? m)(d? d)(y? y))))
+(check-error (checked-make-date 13 1 1900))
+(check-error (checked-make-date 12 50 1900))
+(check-error (checked-make-date 12 12 1890))
+(check-expect (checked-make-date 8 11 1919) (make-date 8 11 1919))
+
+
+;; Problem 4
+
+;; j : date -> num
+;; is a month adjustment for a given date value
+(define (j date)
+  (cond
+    [(= (date-m date) 1) 1]
+    [(= (date-m date) 2) 4]
+    [(= (date-m date) 3) 4]
+    [(= (date-m date) 4) 0]
+    [(= (date-m date) 5) 2]
+    [(= (date-m date) 6) 5]
+    [(= (date-m date) 7) 0]
+    [(= (date-m date) 8) 3]
+    [(= (date-m date) 9) 6]
+    [(= (date-m date) 10) 1]
+    [(= (date-m date) 11) 4]
+    [(= (date-m date) 12) 6]))
+(check-expect (j (checked-make-date 1 1 1900)) 1)
+(check-expect (j (checked-make-date 2 1 1900)) 4)
+(check-expect (j (checked-make-date 3 1 1900)) 4)
+(check-expect (j (checked-make-date 4 1 1900)) 0)
+(check-expect (j (checked-make-date 5 1 1900)) 2)
+(check-expect (j (checked-make-date 6 1 1900)) 5)
+(check-expect (j (checked-make-date 7 1 1900)) 0)
+(check-expect (j (checked-make-date 8 1 1900)) 3)
+(check-expect (j (checked-make-date 9 1 1900)) 6)
+(check-expect (j (checked-make-date 10 1 1900)) 1)
+(check-expect (j (checked-make-date 11 1 1900)) 4)
+(check-expect (j (checked-make-date 12 1 1900)) 6)
+
+;; n : date -> num
+;; does a computation that leads toward finding the
+;; day of the week on a given date
+(define (n date)
+  (+ (- (date-y date) 1900) (j date) (date-d date) (floor (/ (date-y date) 4))))
+(check-expect (n (checked-make-date 12 11 1950)) 554)
+
+;; w : date -> num
+;; is the remainder of the function n divided by 7
+(define (w date)
+  (remainder (n date) 7))
+(check-expect (w (checked-make-date 12 11 1950)) 1)
+
+
+;; day-of-week : date -> string
+;; produces the day of the week given a date
+(define (day-of-week date)
+  (cond
+    [(= (w date) 0) "Sunday"]
+    [(= (w date) 1) "Monday"]
+    [(= (w date) 2) "Tuesday"]
+    [(= (w date) 3) "Wednesday"]
+    [(= (w date) 4) "Thursday"]
+    [(= (w date) 5) "Friday"]
+    [(= (w date) 6) "Saturday"]))
+(check-expect (day-of-week (checked-make-date 10 1 2012)) "Monday")
+(check-expect (day-of-week (checked-make-date 10 2 2012)) "Tuesday")
+(check-expect (day-of-week (checked-make-date 10 3 2012)) "Wednesday")
+(check-expect (day-of-week (checked-make-date 10 5 2012)) "Friday")
+(check-expect (day-of-week (checked-make-date 10 4 2012)) "Thursday")
+(check-expect (day-of-week (checked-make-date 10 7 2012)) "Sunday")
+(check-expect (day-of-week (checked-make-date 10 6 2012)) "Saturday")
+
+
+;; Problem 5
+
+;; year-clamp : num -> num
+;; gives a year on [1900,2099]
+(define (year-clamp y)
+  (cond
+    [(and (>= y 1900) (<= y 2099)) y]
+    [else (error 'year-clamp "year not in 20th or 21st century")]))
+(check-expect (year-clamp 1900) 1900)
+(check-error (year-clamp 3000))
+
+;; s? : symbol -> symbol
+;; gives a symbol that is either 'US or' Canada
+(define (s? s)
+  (cond
+    [(symbol=? s 'US) 'US]
+    [(symbol=? s 'Canada) 'Canada]
+    [else (error 's? "not US or Canada")]))
+(check-expect (s? 'US) 'US)
+(check-expect (s? 'Canada) 'Canada)
+(check-error (s? 'Mexico))
+
+
+;; thanksgiving : symbol num -> date
+;; computes the date of thanksgiving of either the
+;; US or Canada in years on the 20th or 21st century
+(define (thanksgiving s y)
+  (cond
+    [(and
+      (symbol=? (s? s) 'US)
+      (string=? (day-of-week (checked-make-date 11 1 (year-clamp y))) "Monday"))
+     (make-date 11 25 (year-clamp y))]
+    [(and
+      (symbol=? (s? s) 'US)
+      (string=? (day-of-week (checked-make-date 11 1 (year-clamp y))) "Thursday"))
+     (make-date 11 22 (year-clamp y))]
+    [(and
+      (symbol=? (s? s) 'US)
+      (string=? (day-of-week (checked-make-date 11 1 (year-clamp y))) "Tuesday"))
+     (make-date 11 24 (year-clamp y))]
+    [(and
+      (symbol=? (s? s) 'US)
+      (string=? (day-of-week (checked-make-date 11 1 (year-clamp y))) "Wednesday"))
+     (make-date 11 23 (year-clamp y))]
+    [(and
+      (symbol=? (s? s) 'US)
+      (string=? (day-of-week (checked-make-date 11 1 (year-clamp y))) "Friday"))
+     (make-date 11 28 (year-clamp y))]
+    [(and
+      (symbol=? (s? s) 'US)
+      (string=? (day-of-week (checked-make-date 11 1 (year-clamp y))) "Saturday"))
+     (make-date 11 27 (year-clamp y))]
+    [(and
+      (symbol=? (s? s) 'US)
+      (string=? (day-of-week (checked-make-date 11 1 (year-clamp y))) "Sunday"))
+     (make-date 11 26 (year-clamp y))]
+    [(and
+      (symbol=? (s? s) 'Canada)
+      (string=? (day-of-week (checked-make-date 10 1 (year-clamp y))) "Monday"))
+     (make-date 10 8 (year-clamp y))]
+    [(and
+      (symbol=? (s? s) 'Canada)
+      (string=? (day-of-week (checked-make-date 10 1 (year-clamp y))) "Tuesday"))
+     (make-date 10 14 (year-clamp y))]
+    [(and
+      (symbol=? (s? s) 'Canada)
+      (string=? (day-of-week (checked-make-date 10 1 (year-clamp y))) "Wednesday"))
+     (make-date 10 13 (year-clamp y))]
+    [(and
+      (symbol=? (s? s) 'Canada)
+      (string=? (day-of-week (checked-make-date 10 1 (year-clamp y))) "Thursday"))
+     (make-date 10 12 (year-clamp y))]
+    [(and
+      (symbol=? (s? s) 'Canada)
+      (string=? (day-of-week (checked-make-date 10 1 (year-clamp y))) "Friday"))
+     (make-date 10 11 (year-clamp y))]
+    [(and
+      (symbol=? (s? s) 'Canada)
+      (string=? (day-of-week (checked-make-date 10 1 (year-clamp y))) "Saturday"))
+     (make-date 10 10 (year-clamp y))]
+    [(and
+      (symbol=? (s? s) 'Canada)
+      (string=? (day-of-week (checked-make-date 10 1 (year-clamp y))) "Sunday"))
+     (make-date 10 9 (year-clamp y))]))
+(check-expect (thanksgiving 'US 2021) (make-date 11 25 2021))
+(check-expect (thanksgiving 'US 2012) (make-date 11 22 2012))
+(check-expect (thanksgiving 'US 2022) (make-date 11 24 2022))
+(check-expect (thanksgiving 'US 2023) (make-date 11 23 2023))
+(check-expect (thanksgiving 'US 2013) (make-date 11 28 2013))
+(check-expect (thanksgiving 'US 2014) (make-date 11 27 2014))
+(check-expect (thanksgiving 'US 2015) (make-date 11 26 2015))
+(check-expect (thanksgiving 'Canada 2012) (make-date 10 8 2012))
+(check-expect (thanksgiving 'Canada 2013) (make-date 10 14 2013))
+(check-expect (thanksgiving 'Canada 2014) (make-date 10 13 2014))
+(check-expect (thanksgiving 'Canada 2015) (make-date 10 12 2015))
+(check-expect (thanksgiving 'Canada 2021) (make-date 10 11 2021))
+(check-expect (thanksgiving 'Canada 2016) (make-date 10 10 2016))
+(check-expect (thanksgiving 'Canada 2017) (make-date 10 9 2017))
+
+
+
+;; Problem 6
+
+;; norway-outer-rect : num -> img
+;; produces a solid red rectangle given a width
+(define (norway-outer-rect w)
+  (rectangle w (* w 5/8) "solid" "red"))
+"eyeball tests"
+(norway-outer-rect 160)
+(norway-outer-rect 240)
+
+;; iceland-outer-rect : num -> img
+;; produces a solid blue rectangle given a width
+(define (iceland-outer-rect w)
+  (rectangle w (* w 5/8) "solid" "blue"))
+"eyeball tests"
+(iceland-outer-rect 160)
+(iceland-outer-rect 240)
+
+;; vert-middle-rect : num -> img
+;; produces a vertical solid white rectangle given a width
+(define (vert-middle-rect w)
+  (rectangle (* w 1/6) (* w 5/8) "solid" "white"))
+"eyeball test"
+(vert-middle-rect 160)
+
+;; horz-middle-rect : num -> img
+;; produces a horizontal solid white rectangle given a width
+(define (horz-middle-rect w)
+  (rectangle w (* w 1/7) "solid" "white"))
+"eyeball test"
+(horz-middle-rect 160)
+
+;; vert-blue-rect : num -> img
+;; produces a vertical solid blue rectangle given a width
+(define (vert-blue-rect w)
+  (rectangle (* w 1/12) (* w 5/8) "solid" "blue"))
+"eyeball test"
+(vert-blue-rect 160)
+
+;; horz-blue-rect : num -> img
+;; produces a horizontal solid blue rectangle given a width
+(define (horz-blue-rect w)
+  (rectangle w (* w 1/13) "solid" "blue"))
+"eyeball test"
+(horz-blue-rect 160)
+
+;; vert-red-rect : num -> img
+;; produces a vertical solid red rectangle given a width
+(define (vert-red-rect w)
+  (rectangle (* w 1/12) (* w 5/8) "solid" "red"))
+"eyeball test"
+(vert-red-rect 160)
+
+;; horz-red-rect : num -> img
+;; produces a horizontal solid red rectangle given a width
+(define (horz-red-rect w)
+  (rectangle w (* w 1/13) "solid" "red"))
+"eyeball test"
+(horz-red-rect 160)
+
+;; flag-Norway : num -> img
+;; produces the flag of Norway given a width
+(define (flag-Norway w)
+  (overlay/offset (vert-blue-rect w) (* w 1/6) 0 
+                  (overlay (horz-blue-rect w) 
+                   (overlay/offset 
+                    (vert-middle-rect w) (* w 1/6) 0 
+                    (overlay (horz-middle-rect w) (norway-outer-rect w))))))
+"eyeball tests"
+(flag-Norway 160)
+(flag-Norway 320)
+
+
+;; flag-Iceland : num -> img
+;; produces the flag of Iceland given a width
+(define (flag-Iceland w)
+  (overlay/offset (vert-red-rect w) (* w 1/6) 0 
+                  (overlay (horz-red-rect w) 
+                   (overlay/offset 
+                    (vert-middle-rect w) (* w 1/6) 0 
+                    (overlay (horz-middle-rect w) (iceland-outer-rect w))))))
+"eyeball tests"
+(flag-Iceland 160)
+(flag-Iceland 320)
+   

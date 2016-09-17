@@ -1,0 +1,9 @@
+CMSC 22610
+Winter 2015
+
+This directory contains the seed code for Project 4.  Your code should go into
+the backend directory; you should feel free to modify or add code in that
+directory as you see fit (as long as the Backend module's signature does not
+change).  You should not need to change any of the code in the other directories
+(unless you want to use your own project 3 solution).
+

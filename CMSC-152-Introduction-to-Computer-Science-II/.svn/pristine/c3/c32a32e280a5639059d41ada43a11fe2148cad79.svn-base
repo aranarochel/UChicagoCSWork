@@ -1,0 +1,2 @@
+htbl: sll.c htbl.c
+	gcc -Wall -o htbl sll.c htbl.c

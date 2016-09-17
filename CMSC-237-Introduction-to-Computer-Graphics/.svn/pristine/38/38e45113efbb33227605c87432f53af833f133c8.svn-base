@@ -1,0 +1,68 @@
+/* Project 1 Rubric */
+/* CMSC 23700, Fall 2015 */
+
+/* === Correctness === */
+/* OBJ::model loading                                               15/15 */
+/* OpenGL object initialization (VAO,VBOs, etc)                     25/25 
+
+    No need to bind: 
+        CS237_CHECK(glBindBuffer(GL_ARRAY_BUFFER, vbufId)); 
+    Inside the Draw function because binding to the VAO has this 
+    already saved in its state. 
+
+*/ 
+/* rendering modes (flat-shading, wireframe)                        20/20 */
+/* Initialization (camera state, projection, modelView matrix)      8/10 
+
+You have to compute the vertical fov from the horizontal fov that is defined in the 
+Scene Object because perspective uses vertical fov (see M3D 5.3.1 for an explanation of the math).
+
+*/ 
+/* shader program (vertex and fragment shaders)                     7/10 
+
+    This: 
+       vec4(position + mPosition,1.0);
+
+    is an unnecessary calculation that vertex shader needs to compute. The
+    translation should be part of the "modelView" matrix before it's sent to the 
+    shader.  
+
+    //Set modelView matrix during rendering 
+    E.g.: cs237::setUniform (this->_mvLoc, modelViewMat * cs237::translate(obj->pos));
+
+
+*/
+/* user interface controls                                          5/5  */
+/* camera controls                                                  20/20 
+
+Awesome controls! 
+*/
+
+/* subtotal     100/105 */ 
+
+/* === Style, etc. === */
+/* code indentation and layout  15/15 */
+/* object representation design 10/15 
+
+Not the best design of your objects to be rendered because it doesn't allow for 
+the Mesh data to be reused. For example, in "simple2" the three boxes use the same 
+Mesh data so you don't need to create three Mesh * for it. They all point to the 
+same model; therefore, you could have had this structure: 
+
+struct Instance {
+    Mesh           *mesh;       //!< the mesh representing this object
+    cs237::vec3f    pos;        //!< the position of the object in world space
+    cs237::color3f  color;      //!< the color of the object
+};
+
+By having a level of indirection, your objects can be "Instances" and you can have the boxes
+point to the same mesh but with different positions and color.
+
+*/
+/* code clarity                 15/15 */
+
+/* subtotal  40/45 */ 
+
+/* _TOTAL-SCORE_    140/150 */
+
+/* graded by Lamont */

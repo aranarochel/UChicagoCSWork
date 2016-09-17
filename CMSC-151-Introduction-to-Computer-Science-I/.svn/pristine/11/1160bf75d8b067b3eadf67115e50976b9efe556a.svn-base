@@ -1,0 +1,208 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-intermediate-reader.ss" "lang")((modname lab3) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ())))
+;; Jaime Arana-Rochel
+;; aranarochel
+;; CS151 Autumn 2012, Lab 3
+
+;; ====== Data Definitions ======
+
+;; a state-rate is a (make-state-rate abbrev pct)
+;; where abbrev is a symbol
+;;   and pct is a number
+(define-struct state-rate (abbrev pct))
+
+;; a (listof state-rate) is either
+;; - empty, or
+;; - (cons r rs) where r is a state-rate and rs is a (listof state-rate)
+
+;; an item is a (make-item kind price quantity)
+;; where kind is a symbol ('hat, 'jacket, etc.),
+;;       price is a num (in dollars), and
+;;       quantity is a num
+(define-struct item (kind price quantity))
+
+;; a (listof item) is either
+;; - empty, or
+;; - (cons i items) where i is an item, and items is a (listof item)
+
+;; a bill is a (make-bill items items-price sales-tax s&h total)
+;; where items is a (listof item),
+;;       items-price is a num (in dollars),
+;;       sales-tax is a num (in dollars),
+;;       s&h (shipping and handling) is a num (in dollars), and
+;;       total is a num (in dollars)
+(define-struct bill (items items-price sales-tax s&h total))
+
+;; ====== Tax Data ======
+
+;; all-state-rates : (listof state-rate)
+;; list of all state sales tax rates
+;; source: Wolfram Alpha Oct 15 2012
+(define all-state-rates
+  (list (make-state-rate 'AK 0)
+        (make-state-rate 'AL 0.04)
+        (make-state-rate 'AR 0.06)
+        (make-state-rate 'AZ 0.066)
+        (make-state-rate 'CA 0.0625)
+        (make-state-rate 'CO 0.029)
+        (make-state-rate 'CT 0.0635)
+        (make-state-rate 'DE 0)
+        (make-state-rate 'FL 0.06)
+        (make-state-rate 'GA 0.04)
+        (make-state-rate 'HI 0.04)
+        (make-state-rate 'IA 0.06)
+        (make-state-rate 'ID 0.06)
+        (make-state-rate 'IL 0.0625)
+        (make-state-rate 'IN 0.07)
+        (make-state-rate 'KS 0.063)
+        (make-state-rate 'KY 0.06)
+        (make-state-rate 'LA 0.04)
+        (make-state-rate 'MA 0.0625)
+        (make-state-rate 'MD 0.06)
+        (make-state-rate 'ME 0.05)
+        (make-state-rate 'MI 0.06)
+        (make-state-rate 'MN 0.06875)
+        (make-state-rate 'MO 0.04225)
+        (make-state-rate 'MS 0.07)
+        (make-state-rate 'MT 0)
+        (make-state-rate 'NC 0.0475)
+        (make-state-rate 'ND 0.05)
+        (make-state-rate 'NE 0.055)
+        (make-state-rate 'NH 0)
+        (make-state-rate 'NJ 0.07)
+        (make-state-rate 'NM 0.05125)
+        (make-state-rate 'NV 0.0685)
+        (make-state-rate 'NY 0.04)
+        (make-state-rate 'OH 0.055)
+        (make-state-rate 'OK 0.045)
+        (make-state-rate 'OR 0)
+        (make-state-rate 'PA 0.06)
+        (make-state-rate 'RI 0.07)
+        (make-state-rate 'SC 0.06)
+        (make-state-rate 'SD 0.04)
+        (make-state-rate 'TN 0.07)
+        (make-state-rate 'TX 0.0625)
+        (make-state-rate 'UT 0.047)
+        (make-state-rate 'VA 0)
+        (make-state-rate 'VT 0.06)
+        (make-state-rate 'WA 0.065)
+        (make-state-rate 'WI 0.05)
+        (make-state-rate 'WV 0.06)
+        (make-state-rate 'WY 0.04)))
+
+;; ====== Operations ======
+
+;; ~~~~~~ Helper Functions ~~~~~~
+
+;; lookup-rate : symbol (listof state-rate)-> num
+;; looks up tax rate for given state
+(define (lookup-rate s all-state-rates)
+  (cond
+    [(empty? all-state-rates) 0]
+    [(cons? all-state-rates)
+     (cond
+       [(symbol=? s (state-rate-abbrev (first all-state-rates)))
+        (state-rate-pct (first all-state-rates))]
+       [else (lookup-rate s (rest all-state-rates))])]))
+(check-expect (lookup-rate 'WY all-state-rates) .04)
+(check-expect (lookup-rate 'WA all-state-rates) .065)
+(check-expect (lookup-rate 'NM all-state-rates) 0.05125)
+(check-expect (lookup-rate 'WY empty) 0)
+
+
+;; total-price : (listof item) -> num
+;; computes the total price of all items in a list
+(define (total-price itms)
+  (cond
+    [(empty? itms) 0]
+    [(cons? itms) (+ (* (item-quantity (first itms)) (item-price (first itms))) 
+                     (total-price (rest itms)))]))
+(check-expect (total-price empty) 0)
+(check-expect (total-price (list 
+                            (make-item 'hat 1 1) 
+                            (make-item 'bat 3 4))) 13)
+(check-expect (total-price (list 
+                            (make-item 'hat 1 1) 
+                            (make-item 'bat 3 4) 
+                            (make-item 'house 200 1))) 213)
+
+
+;; total-quantity: (listof item) -> num
+;; computes the total quantity of all items in a list
+(define (total-quantity itms)
+  (cond
+    [(empty? itms) 0]
+    [(cons? itms) (+ (item-quantity (first itms)) 
+                     (total-quantity (rest itms)))]))
+(check-expect (total-quantity empty) 0)
+(check-expect (total-quantity 
+               (list (make-item 'hat 1 1) 
+                     (make-item 'bat 3 4))) 5)
+(check-expect (total-quantity 
+               (list (make-item 'hat 1 1) 
+                     (make-item 'bat 3 4) 
+                     (make-item 'house 200 1))) 6)
+
+;; cap-at-9 : num -> num
+;; caps a given number from going beyond the value 9
+(define (cap-at-9 n)
+  (cond
+    [(> n 9) 9]
+    [else n]))
+(check-expect (cap-at-9 20) 9)
+(check-expect (cap-at-9 5) 5)
+
+
+;; shipping : (listof item) -> num
+;; computes the shipping charges for the list of items
+(define (shipping itms)
+  (cond
+    [(<= (total-quantity itms) 9) (+ 2 (* .25 (total-quantity itms)))]
+    [(> (total-quantity itms) 9) 
+     (+ 2 (* .25 (cap-at-9 (total-quantity itms))) 
+        (* .05 (- (total-quantity itms) 9)))]))
+(check-expect (shipping 
+               (list (make-item 'hat 1 1) (make-item 'bat 3 4))) 3.25)
+(check-expect (shipping 
+               (list (make-item 'hat 1 9) (make-item 'bat 3 1))) 4.3)
+(check-expect (shipping 
+               (list (make-item 'hat 1 10) (make-item 'bat 3 5))) 4.55)
+
+
+;; ~~~~~~ Billing System ~~~~~~
+
+;; reckon : (listof item) symbol -> bill
+;; computes a bill given a list of items 
+;; and the state in which the order was placed
+(define (reckon itms s)
+  (cond 
+    [(empty? itms) "no bill"]
+    [(cons? itms)
+     (make-bill 
+      itms 
+      (total-price itms) 
+      (* (lookup-rate s all-state-rates) (total-price itms)) 
+      (shipping itms) 
+      (+ (total-price itms) 
+         (* (lookup-rate s all-state-rates) (total-price itms)) 
+         (shipping itms)))]))
+(check-expect (reckon (cons (make-item 'pencil 1.00 1) empty) 'KY)
+              (make-bill (cons (make-item 'pencil 1.00 1) empty)
+                1.00
+                0.06
+                2.25
+                3.31))
+(check-expect (reckon (cons (make-item 'cap 3.00 1) 
+                            (cons (make-item 'ball 2.00 2) empty)) 'WI)
+              (make-bill (cons (make-item 'cap 3.00 1) 
+                      (cons (make-item 'ball 2.00 2) empty))
+                7.00
+                0.35
+                2.75
+               10.10))
+(check-expect (reckon empty 'KY) "no bill")
+
+
+
+

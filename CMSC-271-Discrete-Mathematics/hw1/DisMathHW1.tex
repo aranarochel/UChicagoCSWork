@@ -1,0 +1,74 @@
+%Do not change 
+\documentclass[12pt, oneside]{article}
+\usepackage{amssymb,amsmath}
+\usepackage[margin=1in]{geometry}
+\usepackage{textpos}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+
+% You may add the packages you need here
+
+
+
+\begin{document}
+% Do not modify 
+\begin{textblock*}{3cm}(-1.7cm,-2.6cm)
+\noindent {\scriptsize Staple here!} 
+\end{textblock*}
+
+%Do not modify
+\begin{textblock*}{4cm}(-1.7cm,-2.3cm)
+\noindent {\scriptsize CMSC 27100 Autumn 2015} 
+\end{textblock*}
+
+%Do not modify other than putting your name where stated
+\begin{textblock*}{8cm}(12.5cm,-1cm)
+\noindent {Name: Jaime Arana-Rochel} 
+\end{textblock*}
+%Do not modify other than putting your section (1 or 2) where stated
+\begin{textblock*}{3cm}(12.5cm,-0.5cm)
+\noindent {Section: 1} 
+\end{textblock*}
+%Do not modify other than typing your acknowledgement where stated
+\begin{textblock*}{13.5cm}(-1.7cm,-1.8cm)
+\noindent \textit{\footnotesize Acknowledgement: } 
+\end{textblock*}
+
+\vspace{1cm}
+
+%Do not modify other than typing the homework number after #
+\begin{center}
+\textbf{\Large Homework \#4}
+\end{center}
+
+
+%Rest should contain your solution for the homework. Feel free to improvise in ways that you believe make grading easier.
+\subsection*{Q1}
+Problem: Prove that 21 divides $4^{n+1} + 5^{2n-1}$ whenever $n$ is a positive integer.
+
+\begin{proof}:
+The problem, $P(n)$, can be proved using induction.\\\\
+\textit{Basis}: Let $n=1$. Then $P(1)$ is,
+\[4^{1+1} + 5^{2-1} = 4^{2} + 5 = 21\]
+
+ This value is obviously divisible by 21 so $P(n)$ then holds for the base case $n=1$\\\\
+\textit{Inductive Step}: Assume that $P(n)$ is true for some arbitrary positive integer $n=k$. So $P(k)$ means that,
+\[4^{k+1} + 5^{2k-1}\]
+
+is divisible by 21.
+
+Let $n = k+1$. Under the assumption of the inductive hypothesis,
+\[1*1! +...+ k*k! + (k+1)*(k+1)! = (k+1)!-1 + (k+1)*(k+1)!\]
+\[ = (k+1)!*(1 + (k+1)) -1 \]
+\[ = (k+1)!*(k+2) -1 = (k+2)! - 1\]
+
+This equals the right hand side of the equation, $((k+1)+1)! -1$. Therefore, through induction the proposition $P(n)$ holds for all positive integers $n$.
+\end{proof}
+
+
+
+
+
+
+
+\end{document}

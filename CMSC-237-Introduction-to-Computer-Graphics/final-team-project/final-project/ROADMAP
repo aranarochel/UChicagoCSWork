@@ -1,0 +1,19 @@
+Roadmap for the Final Project Sample Code:
+
+	build			-- build dierctory
+
+	data			-- directory for additional data files (e.g., models,
+				   textures, etc. that are not included in the maps)
+
+	shaders			-- shader source code
+
+	src			-- application source code
+	  buffer-cache.*	-- a cache for OpenGL VAOs used to render chunks
+	  camera.*		-- camera state
+	  main.cxx		-- main function
+	  map-cell.*		-- data structures for representing the terrain
+	  map.*			-- code to deal with loading the map
+	  qtree-util.hxx	-- utility functions for quadtrees
+	  render.cxx		-- rendering code
+	  texture-cache.*	-- a cache for OpenGL textures used for chunks
+	  view.*		-- the viewer

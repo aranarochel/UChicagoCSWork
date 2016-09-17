@@ -1,0 +1,527 @@
+CS152 Winter 2013
+March 8 2013
+Homework 5 guideline
+Adam Shaw
+
+Graders: Here's a (rather verbose) sample solution to HW5.
+I suspect the students' versions may be more concise than this.
+
+Note that the selfsame string may produce different valid results.
+For example, depending on unimportant implementational details,
+the following call may have four different valid results:
+
+$ ./huffman AB
+B 0
+A 1
+
+$ ./huffman AB
+B 1
+A 0
+
+$ ./huffman AB
+A 0
+B 1
+
+$ ./huffman AB
+A 1
+B 0
+
+In that case, any of these is fine. The important fact of a given implementation
+is that the more frequent characters should have shorter codes.
+
+------
+
+Here's an example to try (from the web page):
+
+$ ./huffman senselessness
+S 0
+L 100
+N 101
+E 11
+
+Again, the exact codes don't matter, nor does their order, but S
+should have the shortest code, E next, then L and N.
+
+====== Makefile ======
+
+huffman : huff.h huff.c huffll.h huffll.c encode.h encode.c bits.h bits.c main.c
+	gcc -o huffman -Wall huff.c huffll.c encode.c bits.c main.c
+
+
+====== bits.h ======
+
+#ifndef _BIT_ARRAY_LISTS_H
+#define _BIT_ARRAY_LISTS_H
+
+/* This is a data structure to contain
+   array lists of "bits", represented here
+   as chars '0' and '1' since space is not a concern
+   in the present context. 
+*/
+
+struct bits {
+  int capacity;
+  int next;
+  char *bits;
+};
+
+typedef struct bits bits;
+
+/* Allocate fresh bits struct with given capacity. */
+bits *bits_new(unsigned int sz);
+
+void bits_free(bits *a);
+
+void bits_show(bits *a);
+
+/* Write the "bit" b at the next available spot in a. */
+/* On insufficient capacity, fail (this is not expected to be a problem). */
+void bits_putlast(char b, bits *a);
+
+/* "Remove" the last bit in the array list, which is implemented */
+/* simple by decrementing the "next" index. */
+void bits_remove_last(bits *a);
+
+#endif /* _BIT_ARRAY_LISTS_H */
+
+====== encode.h ======
+
+#ifndef _ENCODE_H
+#define _ENCODE_H
+
+#include "huff.h"
+#include "huffll.h"
+
+int *letter_freq(char *m);
+
+huff *huff_from_msg(char *m);
+
+#endif /* _ENCODE_H */
+
+====== huff.h ======
+
+#ifndef _HUFF_H
+#define _HUFF_H
+
+typedef struct leaf leaf;
+typedef struct node node;
+typedef struct huff huff;
+
+enum huff_tag { LEAF, NODE };
+
+struct leaf {
+  char c;
+  int n;
+};
+
+struct node {
+  int n;
+  huff *lsub;
+  huff *rsub;
+};
+
+union huff_union {
+  leaf leaf;
+  node node;
+};
+
+struct huff {
+  enum huff_tag tag;
+  union huff_union h;
+};
+
+/* Here follow prototypes for a selection of functions you will likely
+   want. You will need to write more, but this is a start.
+*/ 
+
+/* Construct a singleton Huffman tree from a character and a count. */
+huff *huff_singleton(char c, int n);
+
+/* Return the weight of a Huffman tree. */
+int huff_weight(huff *h);
+
+/* Merge two Huffman trees. */
+/* See step 2 of the algorithm on the web page for details. */
+huff *huff_merge(huff *h1, huff *h2);
+
+/* Display a Huffman tree at the console. */
+/* Essential for development and debugging. */
+void huff_show(huff *h);
+
+#endif /* _HUFF_H */
+
+====== huffll.h ======
+
+#ifndef _HUFFLL_H
+#define _HUFFLL_H
+#include "huff.h"
+
+typedef struct huffll huffll;
+
+struct huffll {
+  huff *h;
+  huffll *next;
+};
+
+huffll *huffll_cons(huff *h, huffll *hs);
+
+huffll *huffll_append(huffll *t0, huffll *t1);
+
+void huffll_show(huffll *hs);
+
+/* insert by ascending order by weight */
+huffll *huffll_insert(huff *h, huffll *hs);
+
+/* insertion sort, ascending order by weight */
+huffll *huffll_isort(huffll *hs);
+
+huff *huffll_coalesce(huffll *hs);
+
+#endif /* _HUFFLL_H */
+
+====== bits.c ======
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <strings.h>
+#include "bits.h"
+
+bits *bits_new(unsigned int sz)
+{
+  bits *new = (bits *)malloc(sizeof(bits));
+  new->capacity = sz;
+  new->next = 0;
+  new->bits = (char *)malloc(sz);
+  bzero(new->bits,sz);
+  return new;
+}
+
+void bits_free(bits *a)
+{
+  if (a!=NULL) {
+    free(a->bits);
+    free(a);
+  }
+}
+
+void bits_show(bits *a)
+{
+  int i;
+  for (i=0; i<a->next; i++)
+    putchar(a->bits[i]);
+}
+
+void bits_putlast(char b, bits *a)
+{
+  if (a->next==a->capacity) {
+    /* this is where one would double and copy...I'm not going to bother */
+    fprintf(stderr,"bits_putlast: array full.\n");
+    exit(1);
+  }
+  if (b!='0' && b!='1') {
+    fprintf(stderr,"bits_putlast: please put only '0' or '1'\n");
+    exit(1);
+  }
+  a->bits[a->next] = b;
+  (a->next)++;
+  return;
+}
+
+void bits_remove_last(bits *a)
+{
+  if (a->next==0) {
+    fprintf(stderr,"bits_remove_last: nothing to remove\n");
+    exit(1);
+  }
+  (a->next)--;
+  return;
+}
+
+====== encode.c ======
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <strings.h>
+#include "encode.h"
+
+huffll *leaves(int *freq)
+{
+  int i;
+  huffll *list = NULL;
+  for (i=25; i>=0; i--)
+    if (freq[i]>0)
+      list = huffll_cons(huff_singleton('A'+i,freq[i]),list);
+  return list;
+}
+
+int *letter_freq(char *m)
+{
+  int mlen = strlen(m);
+  int i;
+  int *f = malloc(26*sizeof(int));
+  bzero(f,26*sizeof(int));
+  for (i=0; i<mlen; i++) {
+    char c = m[i];
+    if (c>='A' && c<='Z')
+      f[c-'A']++;
+    else if (c>='a' && c<='z')
+      f[c-'a']++;
+  }
+  return f;
+}
+
+huff *huff_from_msg(char *m)
+{
+  return huffll_coalesce(huffll_isort(leaves(letter_freq(m))));
+}
+
+====== huff.c ======
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <strings.h>
+#include "huff.h"
+
+void bad_tag(char *f)
+{
+  fprintf(stderr,"error in %s: unrecognized tag\n",f);
+}
+
+int huff_weight(huff *h)
+{
+  switch (h->tag) {
+  case LEAF:
+    return h->h.leaf.n;
+  case NODE:
+    return h->h.node.n;
+  }
+  bad_tag("huff_weight");
+  exit(1);
+}
+
+huff *huff_singleton(char c, int n)
+{
+  huff *new = malloc(sizeof(huff));
+  new->tag = LEAF;
+  new->h.leaf.c = c;
+  new->h.leaf.n = n;
+  return new;
+}
+
+huff *huff_node(huff *h0, huff *h1)
+{
+  huff *new = malloc(sizeof(huff));
+  new->tag = NODE;
+  new->h.node.n = huff_weight(h0) + huff_weight(h1);
+  new->h.node.lsub = h0;
+  new->h.node.rsub = h1;
+  return new;
+}
+
+/* helper function for display of huff trees */
+void hsl(int level, huff *h)
+{
+  int i;
+  for (i=0; i<level; i++)
+    putchar('+');
+  switch (h->tag) {
+  case LEAF:
+    printf("LEAF(%c,%i)\n",h->h.leaf.c,h->h.leaf.n);
+    return;
+  case NODE:
+    printf("NODE(%i)\n",h->h.node.n);
+    hsl(level+1,h->h.node.lsub);
+    hsl(level+1,h->h.node.rsub);
+    return;
+  }
+  bad_tag("huff_show");
+  exit(1);
+}
+
+void huff_show(huff *h)
+{
+  hsl(0,h);
+}
+
+huff *huff_merge(huff *h1, huff *h2)
+{
+  int w = huff_weight(h1) + huff_weight(h2);
+  huff *new = malloc(sizeof(huff));
+  new->tag = NODE;
+  new->h.node.n = w;
+  new->h.node.lsub = h1;
+  new->h.node.rsub = h2;
+  return new;
+}
+
+====== huffll.c ======
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <strings.h>
+#include "huff.h"
+#include "huffll.h"
+
+huffll *huffll_cons(huff *h, huffll *hs)
+{
+  huffll *new = malloc(sizeof(huffll));
+  new->h = h;
+  new->next = hs;
+  return new;
+}
+
+huffll *huffll_append(huffll *hs0, huffll *hs1)
+{
+  huffll *p = hs0;
+  if (hs0==NULL)
+    return hs1;
+  while (p->next)
+    p=p->next;
+  p->next = hs1;
+  return hs0;
+}
+
+void huffll_show(huffll *t)
+{
+  int i=0;
+  printf("BEGIN HUFFLL\n");
+  while (t) {
+    printf("item %i: ",i++);
+    huff_show(t->h);
+    t=t->next;
+  }
+  printf("END HUFFLL\n");
+}
+
+/*
+huffll *leaves(huff *h)
+{
+  switch (h->tag) {
+  case LEAF:
+    return huffll_cons(h->h.leaf.c,NULL,NULL);
+  case NODE:
+    return append(leaves(h->h.node.lsub),leaves(h->h.node.rsub));
+  }
+  fprintf(stderr,"error in leaves: unrecognized tag\n");
+  exit(1);
+}
+*/
+
+int lighter(huff *h, huff *i)
+{
+  return (huff_weight(h)<huff_weight(i));
+}
+
+huffll *huffll_insert(huff *h, huffll *hs)
+{
+  huffll *curr, *prev;
+  if (hs==NULL || lighter(h,hs->h))
+    return huffll_cons(h,hs);
+  prev = hs;
+  curr = hs->next;
+  while (curr!=NULL) {
+    if (lighter(h,curr->h)) {
+      prev->next = huffll_cons(h,curr);
+      return hs;
+    }
+    prev = prev->next;
+    curr = curr->next;
+  }
+  prev->next = huffll_cons(h,NULL);
+  return hs;
+}
+
+huffll *huffll_isort(huffll *hs)
+{
+  if (hs==NULL || hs->next==NULL)
+    return hs;
+  return huffll_insert(hs->h,huffll_isort(hs->next));
+}
+
+huff *huffll_coalesce(huffll *hs)
+{
+  if (hs==NULL) {
+    fprintf(stderr,"error in huffll_merge: given NULL\n");
+    exit(1);
+  }
+  if (hs->next==NULL)
+    return hs->h;
+  return 
+    huffll_coalesce(huffll_insert(huff_merge(hs->h,hs->next->h),hs->next->next));
+}
+
+====== main.c ======
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <strings.h>
+#include "huff.h"
+#include "huffll.h"
+#include "encode.h"
+#include "bits.h"
+
+void show_helper(huff *h, bits *history)
+{
+  switch (h->tag) {
+  case LEAF:
+    printf("%c ", h->h.leaf.c);
+    bits_show(history);
+    putchar('\n');
+    return;
+  case NODE:
+    /* traverse left subtree */
+    bits_putlast('0',history);
+    show_helper(h->h.node.lsub,history);
+    bits_remove_last(history);
+    /* traverse right subtree */
+    bits_putlast('1',history);
+    show_helper(h->h.node.rsub,history);
+    bits_remove_last(history);
+    return;
+  default:
+    fprintf(stderr,"main.show_helper: bad tag\n");
+    exit(1);
+  }
+
+}
+
+/* A function to display the Huffman codes in the tree. */
+void show(huff *h)
+{
+  bits *bs = bits_new(256);
+  show_helper(h,bs);
+}
+
+int main(int argc, char *argv[])
+{
+  char *txt;
+  if (argc!=2) {
+    fprintf(stderr,"please type exactly one whitespace-free string for encoding\n");
+    exit(1);
+  }
+  txt = argv[1];
+  huff *h = huff_from_msg(txt);
+  show(h);
+  return 0;
+}
+
+====== Please see the top of the file for remarks.  ======
+
+====== Evaluation  ======
+
+/* letter frequency count                    -/ 10 */
+/* can build singleton Huffman leaves        -/ 10 */
+/* can sort Huffman trees by weight          -/ 16 */
+/* inserts Huff. trees by weight into list   -/ 10 */
+/* merges pairs of Huff. trees               -/ 10 */
+/* encodes Huffman tree from string          -/ 10 */
+/* prints Huffman codes to stdout            -/ 20 */
+
+/* Makefile                                  -/  2 */
+/* svn                                       -/  2 */
+
+/* style                                     -/ 10 */
+
+/* _total-score_                             -/100 */
+
+/* graded by YOUR-NAME-HERE */

@@ -1,0 +1,48 @@
+%Do not change 
+\documentclass[12pt, oneside]{article}
+\usepackage{amssymb,amsmath}
+\usepackage[margin=1in]{geometry}
+\usepackage{textpos}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+
+% You may add the packages you need here
+
+
+
+\begin{document}
+%Do not modify
+\begin{textblock*}{4cm}(-1.7cm,-2.3cm)
+\noindent {\scriptsize GEOS 254 Winter 2016} 
+\end{textblock*}
+
+%Do not modify other than putting your name where stated
+\begin{textblock*}{8cm}(12.5cm,-2.3cm)
+\noindent {Name: Jaime Arana-Rochel} 
+\end{textblock*}
+
+
+\vspace{1cm}
+
+\makeatletter
+\setlength{\@fptop}{0pt}
+\makeatother
+
+%Do not modify other than typing the homework number after #
+\begin{center}
+\textbf{\Large Homework \#7}
+\end{center}
+
+
+%Rest should contain your solution for the homework. Feel free to improvise in ways that you believe make grading easier.
+\subsection*{1) Solving the Heat Equation}
+a) Since the thermal diffusivity had units in $m^2/s$, I chose $\Delta x = 1000$m. Given these two things, I had to choose my time step $\Delta t$ so that it was less than 
+\[1/2 \dfrac{(\Delta x)^2}{k}\,=\, 625\,\,billion\,\,seconds \]
+A suitable time step then for this problem was $\Delta t = 3.154$ x $10^{10}$ seconds, or 1000 years. Running the numerical method for 300 of these time steps, and measuring the temperature at $z=50$km, I found that the maximum temperature in the slab drops below 500 K after about 295 millennia. After 295 millennia, the temperature is estimated to be 499.891044 K.\\ 
+
+This result seems reasonable since the thermal diffusivity is so low, and the code shows a steady decrease in temperature at $z=50$km. The behavior of the temperature of the surrounding grid points also behaved like it should. As millennia passed on, the temperature at the middle decreased while the temperature of the grid points on either side steadily increased, with the nearest grid points increasing in temperature first and then the ones next to those and so on. 
+
+
+
+\end{document}

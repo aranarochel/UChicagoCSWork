@@ -1,0 +1,92 @@
+%Do not change 
+\documentclass[12pt, oneside]{article}
+\usepackage{amssymb,amsmath}
+\usepackage[margin=1in]{geometry}
+\usepackage{textpos}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+
+% You may add the packages you need here
+
+
+
+\begin{document}
+%Do not modify
+\begin{textblock*}{4cm}(-1.7cm,-2.3cm)
+\noindent {\scriptsize GEOS 254 Winter 2016} 
+\end{textblock*}
+
+%Do not modify other than putting your name where stated
+\begin{textblock*}{8cm}(12.5cm,-2.3cm)
+\noindent {Name: Jaime Arana-Rochel} 
+\end{textblock*}
+
+
+\vspace{1cm}
+
+\makeatletter
+\setlength{\@fptop}{0pt}
+\makeatother
+
+%Do not modify other than typing the homework number after #
+\begin{center}
+\textbf{\Large Homework \#4}
+\end{center}
+
+
+%Rest should contain your solution for the homework. Feel free to improvise in ways that you believe make grading easier.
+\subsection*{1) Fitting Functions to Data}
+a) Using interpolation to fit the data using monomials as the basis function, I get the following coefficients $(C_{j})$ for the function of the form $f(t) = \sum_{j=0}^{13}C_{j}t^{j}$. Note: In fitting the data points, I changed the units of R to 1000's of km.
+\[C_{0} = 13.088500, C_{1} = -1361.618631, C_{2} = 8233.500025, C_{3} = -20692.625254, C_{4} = 29100.900029,\] \[C_{5} = -25824.355880, 
+C_{6} = 15372.284289, C_{7} = -6338.070260, C_{8} = 1834.096641,\] \[C_{9} = -371.455328, C_{10} = 51.554683, C_{11} = -4.670654, 
+C_{12} = 0.248744, C_{13} = -0.005905\]\\
+Fitting the data using the exponential functions, I get the following coefficients for the function of the form $f(t) = \sum_{j=0}^{13}C_{j}e^{-j*t}$ Note: I changed the units of R to 10,000's of km. Because of floating point rounding, the resulting coefficients make it so the function doesn't exactly describe the data, but it is a close approximation.
+\[C0 = -55123799219.207520, C1 = 1012809726066.899658, C2 = -8558617899510.612305,\] \[C3 = 44042422177217.234375, C4 = -153982824858716.343750,\] \[C5 = 386246990022165.437500, 
+C6 = -715119599461482.875000, C7 = 989473854207228.250000,\] \[C8 = -1023150128301797.750000, C9 = 780885132203473.750000,C10 = -427576085308108.687500,\] \[C11 = 159057702910939.562500, 
+C12 = -36029994981379.492188, C13 = 3753463363136.949707\]\\
+Given these fits,\\
+Monomial: Density of Earth 1200 km from center estimate = 10.154332 $g/cm^3$\\
+Exponential: Density of Earth 1200 km from center estimate = 3.503418 $g/cm^3$\\
+Monomial: Density of Earth 6271 km from center estimate = 29.487595 $g/cm^3$\\
+Exponential: Density of Earth 6271 km from center estimate = 5.710114 $g/cm^3$\\\\
+b) If we were to repeat the fitting process using only the last four data points, then the estimates would be,\\
+Monomial: Density of Earth 6271 km from center estimate = 1.908767 $g/cm^3$\\
+Exponential: Density of Earth 6271 km from center estimate = 1.896475 $g/cm^3$\\\\
+c) If instead we measure the earth's density based on the depth to the center from the surface of the earth, we find that our estimates don't change.\\
+Monomial: Density of Earth 1200 km from center (Depth of 5171 km from surface) estimate = 10.154341 $g/cm^3$ \\
+Monomial: Density of Earth 6271 km from center (Depth of 100 km from surface) estimate = 29.487524 $g/cm^3$\\\\
+The estimates match up, except for some slight rounding errors.
+
+
+
+
+\subsection*{2) Interpolations and believability}
+a) Using a monomial basis function to fit the data, I get the following function,
+\[f(t) = 4.991610-0.033759t-2.423947t^2+0.140661t^3+0.441540t^4-0.050535t^5-0.023476t^6+0.002956t^7\]
+\begin{center}
+\includegraphics[width=0.7\linewidth]{C:/Users/Jaime/Downloads/save(1)}
+\end{center}
+
+Using the method of least squares to get the coefficients $a$ and $b$ for a line $y=ax + b$, the coefficients are
+\[a=0.025732\,\,\,\,\,\,\, b=2.265933\]
+We then substitute these values into the fit equation of form $y(t) = Ae^{-\frac{t^2}{B}} $. I found that the resulting function needed to be scaled larger so as to better describe the data, so I scaled it by a factor of 190.
+\[y(t) = 190Ae^{-\frac{t^2}{B}}\]
+We get the following plot which suggests that the data follows a curve which does not intersect the x-axis as the monomial fit suggests. 
+\begin{center}
+\includegraphics[width=0.7\linewidth]{C:/Users/Jaime/Downloads/save(3)}
+\end{center}
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}

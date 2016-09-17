@@ -1,0 +1,57 @@
+/* Project 4 Rubric */
+/*CMSC 23700, Fall 2015 */
+
+/* === Correctness === */
+/* G-Buffer initialization and rendering mode                          20/20 */ 
+/* Spot light initialization                             	    	   15/15 */
+/* Stencil-pass rendering mode 					    0/15 
+
+Not implemented. 
+
+*/
+/* Light-pass rendering mode 						  23/30 
+
+You need to clear your spec_buffer each time you render in deferred mode. Since you are blending the buffer you'll 
+be blending in the information from the previous time deferred mode was turned on. Also you need to disable
+depth mask because it's not needed anymore (glDepthMask(GL_FALSE);) The directional light pass
+only requires you to render a screen quad and not all the cones to the screen. 
+
+*/
+/* Geometry-pass shader program (vertex and fragment shaders)          20/20 */
+/* Stencil-pass  shader program (vertex and fragment shaders)          0/10
+
+Not implemented. 
+
+*/
+/* Light-pass shader program (vertex and fragment shaders)             30/30 
+
+Great job! 
+
+*/
+
+
+/* subtotal   108/140 */ 
+
+/* === Style, etc. === */
+/* Code documentation, indentation and layout         20/20 */
+/* Code clarity                                       19/20 
+
+I would recommend not using floats as your light type due to floating point equality issues: 
+
+ if(lightType == 1.0) {  // directional light
+
+*/
+/* Code reuse                                         20/20 */
+
+
+/* subtotal  59/60 */ 
+/* 
+
+/* === Extra Credit === */
+/* Screen-space ambient occlusion        0/15 */
+/* Shadow mapping 			   0/15 */ 
+
+
+/* _TOTAL-SCORE_    167/200 */
+
+/* graded by Lamont */

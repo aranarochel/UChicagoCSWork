@@ -1,0 +1,157 @@
+Elm.DrawTrees = Elm.DrawTrees || {};
+Elm.DrawTrees.make = function (_elm) {
+   "use strict";
+   _elm.DrawTrees = _elm.DrawTrees || {};
+   if (_elm.DrawTrees.values)
+   return _elm.DrawTrees.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   _P = _N.Ports.make(_elm),
+   $moduleName = "DrawTrees",
+   $Basics = Elm.Basics.make(_elm),
+   $Color = Elm.Color.make(_elm),
+   $Graphics$Collage = Elm.Graphics.Collage.make(_elm),
+   $Graphics$Element = Elm.Graphics.Element.make(_elm),
+   $List = Elm.List.make(_elm),
+   $ListsAndTrees = Elm.ListsAndTrees.make(_elm),
+   $Mouse = Elm.Mouse.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $Window = Elm.Window.make(_elm);
+   var mkEdgeL = F2(function (w,
+   h) {
+      return $Graphics$Collage.move({ctor: "_Tuple2"
+                                    ,_0: w - 2500 - 30
+                                    ,_1: h - 1000 - 40})($Graphics$Collage.rotate($Basics.degrees(-30))($Graphics$Collage.filled($Color.red)(A2($Graphics$Collage.rect,
+      3,
+      80))));
+   });
+   var mkEdgeR = F2(function (w,
+   h) {
+      return $Graphics$Collage.move({ctor: "_Tuple2"
+                                    ,_0: w - 2500 + 30
+                                    ,_1: h - 1000 - 40})($Graphics$Collage.rotate($Basics.degrees(30))($Graphics$Collage.filled($Color.red)(A2($Graphics$Collage.rect,
+      3,
+      80))));
+   });
+   var mkNode = F2(function (w,h) {
+      return $Graphics$Collage.move({ctor: "_Tuple2"
+                                    ,_0: w - 2500
+                                    ,_1: h - 1000})($Graphics$Collage.filled($Color.blue)($Graphics$Collage.circle(5)));
+   });
+   var treeF = F2(function (_v0,
+   t) {
+      return function () {
+         switch (_v0.ctor)
+         {case "_Tuple2":
+            return function () {
+                 var func = F3(function (_v4,
+                 tr,
+                 accum) {
+                    return function () {
+                       switch (_v4.ctor)
+                       {case "_Tuple2":
+                          return function () {
+                               switch (tr.ctor)
+                               {case "Empty": return accum;
+                                  case "Node":
+                                  return A2($List.append,
+                                    A3(func,
+                                    {ctor: "_Tuple2"
+                                    ,_0: _v4._0 + 50
+                                    ,_1: _v4._1 - 80},
+                                    tr._1,
+                                    accum),
+                                    A2($List.append,
+                                    A3(func,
+                                    {ctor: "_Tuple2"
+                                    ,_0: _v4._0 - 50
+                                    ,_1: _v4._1 - 80},
+                                    tr._2,
+                                    accum),
+                                    A2($List.append,
+                                    _L.fromArray([A2(mkNode,
+                                                 _v4._0,
+                                                 _v4._1)
+                                                 ,A2(mkEdgeL,_v4._0,_v4._1)
+                                                 ,A2(mkEdgeR,_v4._0,_v4._1)]),
+                                    accum)));}
+                               _U.badCase($moduleName,
+                               "between lines 43 and 49");
+                            }();}
+                       _U.badCase($moduleName,
+                       "between lines 43 and 49");
+                    }();
+                 });
+                 return A3(func,
+                 {ctor: "_Tuple2"
+                 ,_0: _v0._0
+                 ,_1: _v0._1},
+                 t,
+                 _L.fromArray([]));
+              }();}
+         _U.badCase($moduleName,
+         "between lines 42 and 50");
+      }();
+   });
+   var view = F2(function (_v12,
+   tree) {
+      return function () {
+         switch (_v12.ctor)
+         {case "_Tuple2":
+            return A4($Graphics$Element.container,
+              _v12._0,
+              _v12._1,
+              $Graphics$Element.middle,
+              A3($Graphics$Collage.collage,
+              _v12._0,
+              _v12._1,
+              A2(treeF,
+              {ctor: "_Tuple2"
+              ,_0: $Basics.toFloat(_v12._0)
+              ,_1: $Basics.toFloat(_v12._1)},
+              tree)));}
+         _U.badCase($moduleName,
+         "between lines 56 and 57");
+      }();
+   });
+   var shiftList = function (xs) {
+      return A2($List.append,
+      $List.tail(xs),
+      _L.fromArray([$List.head(xs)]));
+   };
+   var sampleListOn = F2(function (sig,
+   xs) {
+      return A2($Signal.map,
+      function (x) {
+         return $List.head(x);
+      },
+      A3($Signal.foldp,
+      F2(function (s,values) {
+         return shiftList(values);
+      }),
+      xs,
+      sig));
+   });
+   var signalTree = A2(sampleListOn,
+   $Mouse.clicks,
+   A2($ListsAndTrees.balancedTrees,
+   0,
+   4));
+   var main = A3($Signal.map2,
+   view,
+   $Window.dimensions,
+   signalTree);
+   _elm.DrawTrees.values = {_op: _op
+                           ,shiftList: shiftList
+                           ,sampleListOn: sampleListOn
+                           ,mkNode: mkNode
+                           ,mkEdgeR: mkEdgeR
+                           ,mkEdgeL: mkEdgeL
+                           ,treeF: treeF
+                           ,view: view
+                           ,signalTree: signalTree
+                           ,main: main};
+   return _elm.DrawTrees.values;
+};

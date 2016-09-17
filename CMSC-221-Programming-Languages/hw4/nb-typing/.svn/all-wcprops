@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/aranarochel-cs221-spr-14/!svn/ver/66/hw4/nb-typing
+END
+token.sml
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/aranarochel-cs221-spr-14/!svn/ver/66/hw4/nb-typing/token.sml
+END
+derivation-sig.sml
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/aranarochel-cs221-spr-14/!svn/ver/66/hw4/nb-typing/derivation-sig.sml
+END
+derivation.sml
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/aranarochel-cs221-spr-14/!svn/ver/66/hw4/nb-typing/derivation.sml
+END
+ast.sml
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/aranarochel-cs221-spr-14/!svn/ver/66/hw4/nb-typing/ast.sml
+END
+sources.cm
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/aranarochel-cs221-spr-14/!svn/ver/66/hw4/nb-typing/sources.cm
+END
+lex.sml
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/aranarochel-cs221-spr-14/!svn/ver/66/hw4/nb-typing/lex.sml
+END
+parse.sml
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/aranarochel-cs221-spr-14/!svn/ver/66/hw4/nb-typing/parse.sml
+END
+ty.sml
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/aranarochel-cs221-spr-14/!svn/ver/66/hw4/nb-typing/ty.sml
+END

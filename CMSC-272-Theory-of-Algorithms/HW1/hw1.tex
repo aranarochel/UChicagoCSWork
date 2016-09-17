@@ -1,0 +1,117 @@
+%Do not change 
+\documentclass[12pt, oneside]{article}
+\usepackage{amssymb,amsmath}
+\usepackage[margin=1in]{geometry}
+\usepackage{textpos}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+
+% You may add the packages you need here
+
+
+
+\begin{document}
+%Do not modify
+\begin{textblock*}{4cm}(-1.7cm,-2.3cm)
+\noindent {\scriptsize CMSC 27200 Spring 2016} 
+\end{textblock*}
+
+%Do not modify other than putting your name where stated
+\begin{textblock*}{8cm}(12.5cm,-2.3cm)
+\noindent {Name: Jaime Arana-Rochel} 
+\end{textblock*}
+
+
+\vspace{1cm}
+
+\makeatletter
+\setlength{\@fptop}{0pt}
+\makeatother
+
+%Do not modify other than typing the homework number after #
+\begin{center}
+\textbf{\Large Homework \#1}
+\end{center}
+
+
+%Rest should contain your solution for the homework. Feel free to improvise in ways that you believe make grading easier.
+\subsection*{Q1: Exercise 1 Chapter 1 }
+False. It is not the case that every instance of the Stable Matching Problem has a stable matching containing a pair $(m,w)$ where $m$ ranks $w$ first, and $w$ ranks $m$ first.\\\\
+Consider the set of men $M$ = $\{m, m'\}$ and the set of women $W$ = $\{w, w'\}$ with preference lists as follows
+
+\begin{center}
+  \begin{tabular}{ c | c | c }
+    Man & $1^{st}$ & $2^{nd}$ \\ \hline
+    $m$ & $w$ & $w'$ \\ \hline
+    $m'$ & $w'$ & $w$ \\ \hline
+  \end{tabular}
+\end{center}
+
+\begin{center}
+  \begin{tabular}{ c | c | c }
+    Woman & $1^{st}$ & $2^{nd}$ \\ \hline
+    $w$ & $m'$ & $m$ \\ \hline
+    $w'$ & $m$ & $m'$ \\ \hline
+  \end{tabular}
+\end{center}
+
+There are two possible stable matchings given this information. One stable matching $S$ has the pairs $(m,w)$, $(m',w')$. In this matching, the men are as happy as possible. The other stable matching has pairs $(m',w)$, $(m,w')$. The women are as happy as possible in this matching. However, in either stable matching, there is no pair such that both a man and a woman are as happy as possible, as described in the problem. \\
+
+\subsection*{Q2: Exercise 3 Chapter 1}
+False. For every set of TV shows and ratings, there is not always a stable pair of schedules.\\\\
+Suppose we have two networks $A$ and $B$ each with two shows. Network $A$ has shows $a_1$ and $a_2$ with ratings 100 and 500 respectively. Network $B$ has shows $b_1$ and $b_2$ with ratings 300 and 800 respectively. There are two possible scenarios: either $a_1$ competes with $b_1$ for a slot (meaning $a_2$ competes with $b_2$ for a slot) or $a_1$ competes with $b_2$ for a slot.\\
+\subsubsection*{Case 1: $a_1$ competes with $b_1$}
+Let network $A$ have schedule $S$ with $a_1$ in slot 1 and $a_2$ in slot 2. Network $B$ has schedule $T$ with $b_1$ in slot 1 and $b_2$ in slot 2. Network $A$ currently doesn't win any slots. Then the pair $(S,T)$ is unstable because A can win a slot by switching the order of its shows. The same is true if $a_1$ and $b_1$ were competing for slot 2.
+
+
+\subsubsection*{Case 2: $a_1$ competes with $b_2$}
+Let network $A$ have schedule $S$ with $a_1$ in slot 1 and $a_2$ in slot 2. Network $B$ has schedule $T$ with $b_2$ in slot 1 and $b_1$ in slot 2. Currently, network $A$ wins slot 2 and network $B$ wins slot 1. Then the pair $(S,T)$ is unstable because B can win both slots by switching the order of its shows. The same is true if $a_1$ and $b_2$ were competing for slot 2.\\
+
+\subsection*{Q3: Exercise 8 Chapter 1}
+True. A woman may end up better off by lying about her preferences.\\
+
+Consider the set of men $M$ = $\{m, m', m''\}$ and the set of women $W$ = $\{w, w', w''\}$ with preference lists as follows
+
+\begin{center}
+  \begin{tabular}{ c | c | c | c}
+    Man & $1^{st}$ & $2^{nd}$ & $3^{rd}$ \\ \hline
+    $m$ & $w$ & $w''$ & $w'$ \\ \hline
+    $m'$ & $w$ & $w'$ & $w''$ \\ \hline
+    $m''$ & $w''$ & $w$ & $w'$ \\
+  \end{tabular}
+\end{center}
+
+\begin{center}
+  \begin{tabular}{ c | c | c | c}
+    Woman & $1^{st}$ & $2^{nd}$ & $3^{rd}$ \\ \hline
+    $w$ & $m''$ & $m$ & $m'$ \\ \hline
+    $w'$ & $m'$ & $m$ & $m''$ \\ \hline
+    $w''$ & $m$ & $m'$ & $m''$ \\
+  \end{tabular}
+\end{center}
+
+Running the Gale-Shapley algorithm with these preferences we see that $m$ proposes and gets engaged to $w$. $m'$ proposes to $w$, gets rejected, then proposes to $w'$ and gets engaged. Finally $m''$ proposes and gets engaged to $w''$. Thus the stable matching from running G-S is 
+\[S = \{(m,w), (m',w'), (m'',w'')\} \ldotp \]
+In this case woman $w$ is engaged to the man she ranked second. Now suppose that $w$ lies about her preferences and ranks $m$ in third and $m'$ in second. Running G-S with this switch from $w$, we get the following stable matching
+\[S = \{(m,w''), (m',w'), (m'',w)\} \ldotp \]
+Clearly, we can see from this new matching that $w$ is now better of because she is engaged with $w''$ who she ranks as first. So lying about her preference of $m$ and $m'$ helped $w$ end up with a higher ranked man.\\
+
+
+\subsection*{Q4}
+From the Wikipedia page on light, the speed of light $l$ is approximately $3.00$ x $10^8$ m/s. Assuming we're using the classical model of an electron, the approximate radius of an electron is $2.8$ x $10^{-15}$ m, according to Wikipedia. Thus the diameter $d_e$ of an electron is $\approx$ $5.6$ x $10^{-15}$ m. According to Wikipedia, the estimated age of the universe is $\approx$ 13.8 billion years = 13.8 x $10^9$ years = 4.4 x $10^{17}$ seconds. Using this information
+\[Unit\,\,Time\, = \frac{d_e}{l} = \frac{5.6\,x\,10^{-15}}{3.00\,x\,10^8} \approx 1.87\,x\,10^{-23}\,\,seconds \]  
+Given this unit time, if the time spent running the algorithm is the age of the universe, the algorithm will generate 
+\[\frac{4.4\,x\,10^{17} }{1.87\,x\,10^{-23}} \approx 2.35\,x\,10^{40} \]
+total matchings.\\
+Given  $n$ boys and $n$ girls, there are a total of $n!$ possible matchings. So we need to find an $n$ such that $n! \approx 2.35\,x\,10^{40}$. The closest fractional value for $n$ is 35.23
+\[35.23! \approx 2.35\,x\,10^{40} \ldotp \]
+Of course, for the purpose of the algorithm which needs an integer $n$, the largest $n$ would have to about 35.
+
+
+
+
+
+
+
+\end{document}

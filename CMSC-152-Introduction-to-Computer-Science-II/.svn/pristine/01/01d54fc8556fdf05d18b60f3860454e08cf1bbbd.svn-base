@@ -1,0 +1,105 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <strings.h>
+#include <ctype.h>
+#include "huff.h"
+#include "bits.h"
+
+
+char** serialize_helper(huff *h, bits *history, char** codes)
+{
+  switch (h->tag) {
+  case LEAF:
+    codes[(int)h->h.leaf.c] = strdup(bits_print(history));
+    break;
+  case NODE:
+    /* traverse left subtree */
+    bits_putlast('0',history);
+    serialize_helper(h->h.node.lsub,history,codes);
+    bits_remove_last(history);
+    /* traverse right subtree */
+    bits_putlast('1',history);
+    serialize_helper(h->h.node.rsub,history,codes);
+    bits_remove_last(history);
+    break;
+  default:
+    fprintf(stderr,"main.show_helper: bad tag\n");
+    exit(1);
+  }
+  return codes;
+}
+
+char** huff_serialize(huff *h)
+{
+  char **codes = malloc(128*sizeof(char*));
+
+  int i;
+  for(i = 0; i < 128; i++) {
+    codes[i] = NULL;
+  }
+  bits *bs = bits_new(1024);
+  return serialize_helper(h,bs,codes);
+}
+
+void word_to_bitstring(char *s, char** codes)
+{
+  int i;
+  for(i = 0; i < strlen(s); i++) {
+    printf("%s",codes[(int)s[i]]);
+  }
+}
+
+void codes_show(char** codes)
+{
+  int i;
+  for(i = 0; i < 128; i++) {
+    if(codes[i] != NULL) {
+      putchar((char)i);
+      printf("%s\n",codes[i]);
+    }
+  }
+}
+
+int txt_size()
+{
+  long size;
+
+  size = 0;
+  while(getchar() != EOF) {
+    ++size;
+  }
+  return size;
+}
+
+char *txt_to_string()
+{
+  int c;
+  int i = 0;
+  int txt_len = 1 + txt_size();
+  char *string = (char*)malloc(txt_len*sizeof(char));
+  rewind(stdin);
+
+  while((c = getchar()) != EOF) {
+    string[i] = c;
+    i++;
+  }
+  string[i] = '\0';
+  return string;
+}
+
+void huff_encode(char *txt)
+{
+  huff *h = word_to_huff(txt);
+  char **codes = huff_serialize(h);
+  printf("HF\n");
+  codes_show(codes);
+  printf("*\n");
+  word_to_bitstring(txt,codes);
+}
+
+int main(int argc,char *argv[])
+{
+  char *txt = txt_to_string();
+  huff_encode(txt);
+  return 0;
+}

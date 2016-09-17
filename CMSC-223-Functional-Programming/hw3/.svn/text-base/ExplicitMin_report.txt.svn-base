@@ -1,0 +1,28 @@
+TotalScore: 30/30
+
+Complexity: 10/10
+
+---
+deleteMin
+Score: 5
+   deleteMin2 : 2.5 points : Pass
+   deleteMin1 : 2.5 points : Pass
+---
+---
+findMin
+Score: 5
+   findMin2 : 2.5 points : Pass
+   findMin1 : 2.5 points : Pass
+---
+---
+merge
+Score: 5
+   merge1 : 5 points : Pass
+---
+---
+insert
+Score: 5
+   insert2 : 2.5 points : Pass
+   insert1 : 2.5 points : Pass
+---
+

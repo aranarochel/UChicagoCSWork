@@ -1,0 +1,43 @@
+# Test CURSOR-4
+#
+# Assuming this table:
+#
+#   CREATE TABLE numbers(code INTEGER PRIMARY KEY, textcode TEXT, altcode INTEGER);
+#
+# Use a cursor to iterate through every row of the table.
+#
+# Note that this test doesn't check whether the cursor is pointing
+# to valid values, or even whether it hits all the rows in the table.
+# Use the sql-select tests for that (basically, you should make sure that
+# this test doesn't crash or loop indefinitely before you move on to the 
+# tests in sql-select) 
+
+# This file has a B-Tree with height 3, which requires
+# implementing a cursor capable of iterating over
+# the cells of the tree in sequence.
+USE 1table-largebtree.cdb
+
+%%
+
+# Open the numbers table using cursor 0
+Integer      2  0  _  _  
+OpenRead     0  0  4  _
+
+# Go to the first entry. If the database is empty,
+# jump to the end of the program
+Rewind       0  4  _  _
+
+# Jump back to this same instruction until we're gone through all the rows
+Next         0  3  _  _
+
+# Close the cursor
+Close        0  _  _  _
+Halt         _  _  _  _
+
+%%
+
+# No query results
+
+%%
+
+R_0 integer 2

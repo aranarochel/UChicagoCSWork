@@ -1,0 +1,59 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname lab1-starter) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ())))
+(require 2htdp/image)
+
+;; --- John Hancock Center ---
+
+;; 344 m tall
+;; with antennas, 457 m
+;; thus antennas are 113 m
+
+;; JHC dimensions from http://en.wikipedia.org/wiki/John_Hancock_Center
+
+;; In the following named constants, the scale is 1 meter per pixel.
+
+;; jhc-mid-h : number
+;; middle part height
+(define jhc-mid-h 339) 
+
+;; jhc-mid-w : number
+;; middle part width
+(define jhc-mid-w 44)  
+
+;; jhc-tri-w : number
+;; triangle width
+(define jhc-tri-w 12)
+
+;; jhc-top-h : number
+;; topper height
+(define jhc-top-h 5)
+
+;; jhc-top-w : number
+;; topper width
+(define jhc-top-w 37)
+
+;; jhc-ant-h
+;; antenna height
+(define jhc-ant-h 113)
+
+;; jhc-middle : img
+(define jhc-middle
+  (rectangle jhc-mid-w jhc-mid-h "solid" "black"))
+
+;; jhc-rside : img
+(define jhc-rside
+  (right-triangle jhc-tri-w jhc-mid-h "solid" "black"))
+
+;; jhc-lside : img
+(define jhc-lside
+  (flip-horizontal jhc-rside))
+
+;; jhc-topper : img
+(define jhc-topper
+  (rectangle jhc-top-w jhc-top-h "solid" "black"))
+
+;; jhc-antenna : img
+(define jhc-antenna
+  (rectangle 1 jhc-ant-h "outline" "gray"))
+

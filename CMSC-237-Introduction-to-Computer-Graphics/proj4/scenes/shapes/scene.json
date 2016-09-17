@@ -1,0 +1,70 @@
+{
+  "camera" : {
+      "size" : { "wid" : 1024, "ht" : 768 },
+      "fov" : 90,
+      "pos" : { "x" : -6, "y" : 6, "z" : 6 },
+      "look-at" : { "x" : 0, "y" : 2, "z" : 0 },
+      "up" : { "x" : 0, "y" : 1, "z" : 0 }
+    },
+  "lighting" : {
+      "direction" : { "x" : -1, "y" : -1, "z" : -1},
+      "intensity" : { "r" : 0.8, "g" : 0.8, "b" : 0.8},
+      "ambient" : { "r" : 0.2, "g" : 0.2, "b" : 0.2},
+      "shadow" : 0.25,
+      "lights" : [
+	  { "name" : "street-light-1",
+	    "pos" : { "x" : 0, "y" : 7, "z" : 0 },
+	    "direction" : { "x" : 0, "y" : -1, "z" : 0 },
+	    "cutoff" : 35,
+	    "exponent" : 2,
+	    "intensity" : { "r" : 0.8, "g" : 0.8, "b" : 0.5 },
+	    "attenuation" : { "constant" : 0, "linear" : 0, "quadratic" : 0.2 }
+	  }
+	]
+    },
+  "ground" : {
+      "size" : { "wid" : 7, "ht" : 7 },
+      "v-scale" : 1,
+      "height-field" : "ground-hf.png",
+      "color" : { "r" : 0.05, "b" : 0.25, "g" : 0.75 },
+      "color-map" : "ground-cmap.png"
+    },
+  "objects" : [
+      { "file" : "cone.obj",
+        "color" : { "r" : 0.5, "g" : 0.0, "b" : 1.0 },
+        "pos" : { "x" : 1.5, "y" : 2, "z" : 1.5 },
+        "frame" : {
+            "x-axis" : { "x" : 1, "y" : 0, "z" : 0},
+            "y-axis" : { "x" : 0, "y" : 2, "z" : 0},
+            "z-axis" : { "x" : 0, "y" : 0, "z" : 1}
+          }
+      },
+      { "file" : "sphere.obj",
+        "color" : { "r" : 0, "g" : 0.5, "b" : 0.0 },
+        "pos" : { "x" : 1.5, "y" : 3, "z" : -1.5 },
+        "frame" : {
+            "x-axis" : { "x" : 2, "y" : 0, "z" : 0},
+            "y-axis" : { "x" : 0, "y" : 2, "z" : 0},
+            "z-axis" : { "x" : 0, "y" : 0, "z" : 2}
+          }
+      },
+      { "file" : "cube.obj",
+        "color" : { "r" : 0.4, "g" : 0.4, "b" : 1.0 },
+        "pos" : { "x" : -1.5, "y" : 2.5, "z" : 1.5 },
+        "frame" : {
+            "x-axis" : { "x" : 1, "y" : 0, "z" : 0},
+            "y-axis" : { "x" : 0, "y" : 1, "z" : 0},
+            "z-axis" : { "x" : 0, "y" : 0, "z" : 1}
+          }
+      },
+      { "file" : "torus.obj",
+        "color" : { "r" : 0.4, "g" : 0.8, "b" : 1.0 },
+        "pos" : { "x" : -1.5, "y" : 2.25, "z" : -1.5 },
+        "frame" : {
+            "x-axis" : { "x" : 1, "y" : 0, "z" : 0},
+            "y-axis" : { "x" : 0, "y" : 1, "z" : 0},
+            "z-axis" : { "x" : 0, "y" : 0, "z" : 1}
+          }
+      }
+    ]
+}

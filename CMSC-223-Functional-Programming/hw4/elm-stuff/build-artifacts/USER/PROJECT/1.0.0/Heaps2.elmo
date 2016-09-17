@@ -1,0 +1,160 @@
+Elm.Heaps2 = Elm.Heaps2 || {};
+Elm.Heaps2.make = function (_elm) {
+   "use strict";
+   _elm.Heaps2 = _elm.Heaps2 || {};
+   if (_elm.Heaps2.values)
+   return _elm.Heaps2.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   _P = _N.Ports.make(_elm),
+   $moduleName = "Heaps2",
+   $Array = Elm.Array.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm);
+   var findMin = function (_v0) {
+      return function () {
+         switch (_v0.ctor)
+         {case "WrapHeap":
+            return A2($Array.get,0,_v0._0);}
+         _U.badCase($moduleName,
+         "on line 109, column 24 to 33");
+      }();
+   };
+   var isEmpty = function (_v3) {
+      return function () {
+         switch (_v3.ctor)
+         {case "WrapHeap":
+            return _U.eq($Array.length(_v3._0),
+              0);}
+         _U.badCase($moduleName,
+         "on line 106, column 24 to 39");
+      }();
+   };
+   var pop = function (a) {
+      return A3($Array.slice,
+      0,
+      $Array.length(a) - 1,
+      a);
+   };
+   var fromJust = function (mx) {
+      return function () {
+         var _raw = mx,
+         $ = _raw.ctor === "Just" ? _raw : _U.badCase($moduleName,
+         "on line 13, column 30 to 32"),
+         x = $._0;
+         return x;
+      }();
+   };
+   var justGet = F2(function (i,
+   a) {
+      return fromJust(A2($Array.get,
+      i,
+      a));
+   });
+   var swap = F3(function (i,j,a) {
+      return A2($Array.set,
+      j,
+      A2(justGet,i,a))(A2($Array.set,
+      i,
+      A2(justGet,j,a))(a));
+   });
+   var bubbleUp = F2(function (i,
+   a) {
+      return _U.eq(i,
+      0) ? a : function () {
+         var ch = A2(justGet,i,a);
+         var j = (i - 1) / 2 | 0;
+         var par = A2(justGet,j,a);
+         return _U.cmp(par,
+         ch) < 1 ? a : bubbleUp(j)(A2(swap,
+         i,
+         j)(a));
+      }();
+   });
+   var bubbleDown = F2(function (i,
+   a) {
+      return function () {
+         var n = $Array.length(a);
+         return _U.cmp(i,
+         n) > -1 ? a : function () {
+            var $ = {ctor: "_Tuple2"
+                    ,_0: 2 * i + 1
+                    ,_1: 2 * i + 2},
+            j = $._0,
+            k = $._1;
+            var i$ = _U.cmp(A2(justGet,j,a),
+            A2(justGet,i,a)) < 0 ? j : i;
+            var i$$ = _U.cmp(A2(justGet,
+            k,
+            a),
+            A2(justGet,i$,a)) < 0 ? k : i$;
+            return _U.eq(i,
+            i$$) ? a : bubbleDown(i$$)(A2(swap,
+            i,
+            i$$)(a));
+         }();
+      }();
+   });
+   var WrapHeap = function (a) {
+      return {ctor: "WrapHeap"
+             ,_0: a};
+   };
+   var insert = F2(function (x,
+   _v6) {
+      return function () {
+         switch (_v6.ctor)
+         {case "WrapHeap":
+            return function () {
+                 var a$ = A2($Array.push,
+                 x,
+                 _v6._0);
+                 var n = $Array.length(_v6._0);
+                 return WrapHeap(A2(bubbleUp,
+                 n,
+                 a$));
+              }();}
+         _U.badCase($moduleName,
+         "between lines 28 and 30");
+      }();
+   });
+   var deleteMin = function (_v9) {
+      return function () {
+         switch (_v9.ctor)
+         {case "WrapHeap":
+            return function () {
+                 var n = $Array.length(_v9._0);
+                 return _U.eq(n,
+                 0) ? $Maybe.Nothing : function () {
+                    var x = A2(justGet,
+                    n - 1,
+                    _v9._0);
+                    return $Maybe.Just(WrapHeap(bubbleDown(0)(A2($Array.set,
+                    0,
+                    x)(pop(_v9._0)))));
+                 }();
+              }();}
+         _U.badCase($moduleName,
+         "between lines 82 and 89");
+      }();
+   };
+   var empty = WrapHeap($Array.empty);
+   var merge = F2(function (_v12,
+   _v13) {
+      return function () {
+         return function () {
+            return false ? empty : _U.badIf($moduleName,
+            "between lines 112 and 113");
+         }();
+      }();
+   });
+   _elm.Heaps2.values = {_op: _op
+                        ,empty: empty
+                        ,isEmpty: isEmpty
+                        ,findMin: findMin
+                        ,insert: insert
+                        ,deleteMin: deleteMin
+                        ,merge: merge};
+   return _elm.Heaps2.values;
+};

@@ -1,0 +1,71 @@
+\documentclass{article}[12pt]
+
+\setlength{\parskip}{8pt}
+\setlength{\parindent}{0cm}
+
+\newcommand{\assignment}{Homework 2}
+\newcommand{\whoami}{Jaime Arana-Rochel}
+\newcommand{\assignmentdate}{April 22, 2015}
+
+% various macros for relational algebra...
+% edit, and supplement with your own
+
+% rel : relation
+\newcommand{\rel}[1]{\ensuremath{#1}}
+
+% conj : conjunction
+\newcommand{\conj}[2]{\ensuremath{#1 \wedge #2}}
+
+% disj : disjunction
+\newcommand{\disj}[2]{\ensuremath{#1 \vee #2}}
+
+% nj : natural join 
+\newcommand{\nj}[2]{\ensuremath{#1 \bowtie #2}}
+
+% sel : select
+\newcommand{\sel}[2]{\ensuremath{\sigma_{#1} #2}}
+
+% proj : project
+\newcommand{\proj}[2]{\ensuremath{\pi_{#1} #2}}
+
+% ren : rename
+\newcommand{\ren}[2]{\ensuremath{\rho_{#1} #2}}
+
+% ...
+
+\begin{document}
+
+{\large \bf CMSC 23500: Introduction to Databases}
+
+\assignment \\
+\whoami \\
+\assignmentdate
+
+\hrulefill
+
+\section*{Schema A: National Parks}
+\begin{itemize}
+
+\item[A1.] $\:\:\Pi_{pname}\,(\sigma_{visits\_per\_year\,<\,100}\;p)$
+\\
+\item[A2.] $\:\:\Pi_{ssn}\,((\sigma_{pname\,=\,"yellowstone"}\;p)\; \bowtie\; r)$
+\\
+\item[A3.] $\:\:\Pi_{lname}\,((\sigma_{pop\,< \,2,000,000}\;s)\;\bowtie\;p\;\bowtie\;r)$
+\\
+\end{itemize}
+
+\section*{Schema B: Musical Recordings}
+\begin{itemize}
+
+\item[B1.] $\:\:\Pi_{lname}\,((\sigma_{sname\,=\,"Yesterday"}\;s) \bowtie\,w\,\bowtie\,p)$
+\\
+\item[B2.] $\:\:\Pi_{sname}\,((\sigma_{lname\,=\,"Rodgers"\wedge\; fname\,=\,"Richard"}\;p)\;\bowtie\,w\,\bowtie\,s)$
+\\
+\item[B3.] $\:\:\Pi_{sname}\,((\sigma_{iname\,=\,"flute"}\;i) \bowtie\,r\,\bowtie\,t\,\bowtie\,p\,\bowtie\,s)$
+\\
+\item[B4.] $\:\:\Pi_{lname}\,((\sigma_{iname\,=\,"guitar"}\;i) \bowtie\,p\,\bowtie\,t\,\bowtie\,r)$
+\\
+\item[B5.] $\:\:\Pi_{lname,fname}\,((\sigma_{iname\,=\,"tuba"}\;i) \bowtie\,(w\,\bowtie\,r)\,\bowtie\,t\,\bowtie\,p\,\bowtie\,s)$
+\end{itemize}
+
+\end{document}

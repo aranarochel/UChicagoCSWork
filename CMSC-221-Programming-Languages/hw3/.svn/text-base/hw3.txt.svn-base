@@ -1,0 +1,18 @@
+(* Jaime Arana-Rochel, CNET: aranarochel
+   CS221, 4/23/2014 *)
+
+Problem 2:
+
+t    ::= exp
+         bool
+         if bool then t else t
+         
+exp  ::= succ exp
+         pred exp
+	 n
+
+bool ::= true
+	 false
+         isZero exp
+
+n    ::= 0

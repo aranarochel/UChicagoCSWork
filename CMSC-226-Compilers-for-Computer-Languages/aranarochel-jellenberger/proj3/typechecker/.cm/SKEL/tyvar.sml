@@ -1,0 +1,2 @@
+Skeleton 5
+d2f2d"Atom"дўStamp"ad"TyVar"jh3baдўOrd"и0d2aдўSet"jзр±я!gp1e"RedBlackSetFn"aдўMap"jя3gp1e"RedBlackMapFn"f1яaдўTbl"jя'gp1e"HashTableFn"h3aя,gp1c"ORD_SET"aяЃgp1c"ORD_MAP"aяЃ-gp1c"MONO_HASH_TABLE"

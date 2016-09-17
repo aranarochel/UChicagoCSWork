@@ -1,0 +1,621 @@
+(* type-checker.sml
+ *
+ * CMSC22610 Winter 2015
+ *
+ * COPYRIGHT (c) 2015 John Reppy (http://cs.uchicago.edu/~jhr)
+ * All rights reserved.
+ *)
+
+signature TYPE_CHECKER =
+  sig
+
+    val chkProgram : Error.err_stream * ParseTree.program -> AST.program
+  end
+
+structure TypeChecker : TYPE_CHECKER =
+  struct
+
+  structure BN = BasisNames
+
+
+    (* Sorry for not being good programmers and placing utility functions in its own module *)
+
+    (************** TYPE DEFINITIONS & UTILITY FUNCTIONS ****************)
+
+    (* The Context DataType *)
+    datatype cxt = C of {
+        errS : Error.err_stream,
+        span : Error.span,
+        tvE  : TyVar.t AtomMap.map,
+        tcE  : (TyCon.t * TyVar.t list * Type.ty) AtomMap.map,
+        dcE  : DataCon.t AtomMap.map,
+        vE   : Var.t AtomMap.map
+    }
+
+    (* Creates the initial context of the typechecker *)
+    fun initCXT (err, sp) = 
+      let
+        val tce1 = AtomMap.insert (AtomMap.empty, BN.bool, (Basis.boolTyc,[],Basis.boolTy))
+        val tce2 = AtomMap.insert (tce1, BN.int, (Basis.intTyc,[],Basis.intTy))
+        val tce3 = AtomMap.insert (tce2, BN.list, (Basis.listTyc,[TyVar.new(Atom.atom "a")],Basis.listTy(Type.VarTy(TyVar.new(Atom.atom "a")))))
+        val tce4 = AtomMap.insert (tce3, BN.string, (Basis.stringTyc,[],Basis.stringTy))
+        val tce  = AtomMap.insert (tce4, BN.unit, (Basis.unitTyc,[],Basis.unitTy))
+
+        val dce1 = AtomMap.insert (AtomMap.empty, BN.boolFalse, Basis.boolFalse)
+        val dce2 = AtomMap.insert (dce1, BN.boolTrue, Basis.boolTrue)
+        val dce3 = AtomMap.insert (dce2, BN.listCons, Basis.listCons)
+        val dce4 = AtomMap.insert (dce3, BN.listNil, Basis.listNil)
+        val dce  = AtomMap.insert (dce4, BN.unitUnit, Basis.unitUnit)
+
+        val ve1  = AtomMap.insert (AtomMap.empty, BN.argc, Basis.argc)
+        val ve2  = AtomMap.insert (ve1, BN.arg, Basis.arg)
+        val ve3  = AtomMap.insert (ve2, BN.fail, Basis.fail)
+        val ve4  = AtomMap.insert (ve3, BN.ignore, Basis.ignore)
+        val ve5  = AtomMap.insert (ve4, BN.neg, Basis.neg)
+        val ve6  = AtomMap.insert (ve5, BN.not, Basis.not)
+        val ve7  = AtomMap.insert (ve6, BN.print, Basis.print)
+        val ve8  = AtomMap.insert (ve7, BN.size, Basis.size)
+        val ve   = AtomMap.insert (ve8, BN.sub, Basis.sub)
+      in
+        C { errS = err, span = sp, tvE = AtomMap.empty, tcE = tce, dcE = dce, vE = ve}
+      end
+
+
+    (* mark returns a Context * Tree tuple with an updated span *)
+    fun mark (C {errS, span, tvE, tcE, dcE, vE}, mrk) = (case mrk
+        of {span = sp, tree = tr} => 
+              (C {errS = errS, span = sp, tvE = tvE, tcE = tcE, dcE = dcE, vE = vE}, tr))
+
+    
+    (* set of helper functions to get context contents *)
+    fun getERR (C {errS, span, tvE, tcE, dcE, vE}) = errS
+    fun getSPAN (C {errS, span, tvE, tcE, dcE, vE}) = span
+    fun getTVE (C {errS, span, tvE, tcE, dcE, vE}) = tvE
+    fun getTCE (C {errS, span, tvE, tcE, dcE, vE}) = tcE
+    fun getDCE (C {errS, span, tvE, tcE, dcE, vE}) = dcE
+    fun getVE  (C {errS, span, tvE, tcE, dcE, vE}) = vE
+
+    
+    (* Helper function for envMerge. Merges two environments *)
+    fun envMergeHelper (env1, env2) = AtomMap.unionWith (fn (x,y) => x) (env1, env2)
+    
+    
+    (* merge contexts *)
+    fun envMerge (cxt1, cxt2) = 
+        let val tve1 = getTVE cxt1  (* environments from ctx1 *)
+            val tce1 = getTCE cxt1
+            val dce1 = getDCE cxt1
+            val ve1  = getVE  cxt1
+
+            val tve2 = getTVE cxt2  (* environments from ctx2 *)
+            val tce2 = getTCE cxt2
+            val dce2 = getDCE cxt2
+            val ve2  = getVE  cxt2
+
+            val tve = envMergeHelper (tve1, tve2)
+            val tce = envMergeHelper (tce1, tce2)
+            val dce = envMergeHelper (dce1, dce2)
+            val ve  = envMergeHelper (ve1, ve2)
+        in 
+            C {errS = getERR(cxt1), span = getSPAN(cxt1), tvE = tve, tcE = tce, dcE = dce, vE = ve}
+        end
+
+    
+
+    (* takes a ParseTree.typ and converts it into a Type.t type *)
+    fun typToTy (typ) = (case typ
+        of ParseTree.MarkTyp {span = sp, tree = t} => typToTy t
+         | ParseTree.PolyTyp  (ids, typ) => Type.PolyTy(map (fn x => TyVar.new x) ids, typToTy typ)
+         | ParseTree.VarTyp id =>  Type.VarTy(TyVar.new id)   
+         | ParseTree.ConTyp (id, typs)    => raise Fail "typToTy : ParseTree.ConTyp"
+         | ParseTree.FunTyp (ty1,ty2)  => Type.FunTy(typToTy ty1, typToTy ty2)
+         | ParseTree.TupleTyp typs => Type.TupleTy (map (fn x => typToTy x) typs))
+
+
+    (* like typToTy  but returns options *)
+    fun typToTyOp typ = (case typ
+        of NONE => NONE
+         | SOME t => SOME (typToTy t))
+
+    fun cmpTyToTys (ty, tys) = (case tys
+        of [] => true
+         | (t::rest) => if (TypeUtil.same(ty,t))
+                        then (cmpTyToTys(ty,rest))
+                        else (false)
+        (*end case*))
+
+    (*end case*)
+
+    fun updateTVE (C {errS, span, tvE, tcE, dcE, vE}, ids) =
+        (case ids
+           of []       => C {errS = errS, span = span, tvE = tvE, tcE = tcE, dcE = dcE, vE = vE}
+            | id::rest => let val tvE' = AtomMap.insert (tvE, id, TyVar.new(id))
+                              val ctx' = C {errS = errS, span = span, tvE = tvE', tcE = tcE, dcE = dcE, vE = vE}
+                          in  
+                              updateTVE (ctx', rest)
+                          end 
+        (* end case *))
+
+    fun updateTCE (C {errS, span, tvE, tcE, dcE, vE}, atom1, atoms, typ) = 
+        let val tyvars = map (fn x => TyVar.new x) atoms
+            val tycon = TyCon.new (atom1, tyvars)
+            val ty    = typToTy typ
+            val tcE' = AtomMap.insert (tcE, atom1, (tycon,tyvars,ty))
+        in
+            C {errS = errS, span = span, tvE = tvE, tcE = tcE', dcE = dcE, vE = vE}
+        end
+
+
+    fun updateDCE (C {errS, span, tvE, tcE, dcE, vE}, atom1, atoms, cons) = 
+        raise Fail "write updateDCE"
+
+    fun updateVE (C {errS, span, tvE, tcE, dcE, vE}, bind, typ) = 
+        let val ty = typToTy typ 
+            val var = Var.new (bind, ty)
+            val ve = AtomMap.insert (vE, bind, var)
+        in
+            C {errS = errS, span = span, tvE = tvE, tcE = tcE, dcE = dcE, vE = ve}
+        end
+
+    (* like updateVE but the type argument is a Type.ty instead of a ParseTree.typ *)
+    fun updateVE2 (C {errS, span, tvE, tcE, dcE, vE}, bind, typ) = 
+        let val var = Var.new (bind, typ)
+            val ve = AtomMap.insert (vE, bind, var)
+        in
+            C {errS = errS, span = span, tvE = tvE, tcE = tcE, dcE = dcE, vE = ve}
+        end
+
+    
+    (* Like update TCE but the type list is empty in "val ty" *)
+    fun addDataCon (C {errS, span, tvE, tcE, dcE, vE}, atom1, atoms) =
+        let val tyvars = map (fn x => TyVar.new x) atoms
+            val tycon = TyCon.new (atom1, tyvars)
+            val ty    = Type.ConTy (tycon, [])
+            val tcE' = AtomMap.insert (tcE, atom1, (tycon,tyvars,ty))
+        in
+            C {errS = errS, span = span, tvE = tvE, tcE = tcE', dcE = dcE, vE = vE}
+        end
+
+    fun fromOption opt = (case opt
+        of SOME x => x
+         | NONE   => raise Fail "fromOption: received a NONE type")
+
+
+    (******************* TYPE CHECKER *******************)
+    (*
+    fun chkProgram (errStrm, prog) = (case prog
+        of ParseTree.MarkProgram {span = sp, tree = t} => (case t
+            of ParseTree.Program (defs, exp) => 
+                let val cxt = initCXT(errStrm,sp)
+                    val cxt' = chkDefs (cxt, defs)
+                    val ty = chkExp (cxt, exp)
+                    val exprep = AST.StrExp("sup")
+                in
+                    AST.Program (AST.Exp(exprep,ty))
+                end))
+    *)
+    fun chkProgram (errStrm, prog) = (case prog
+        of ParseTree.MarkProgram {span = sp, tree = t} => (case t
+            of ParseTree.Program (defs, exp) => 
+                let val cxt = initCXT(errStrm,sp)
+                    val cxt' = chkDefs (cxt, defs)
+                    val (expRep,ty) = chkExp (cxt', exp)
+                in
+                    AST.Program (AST.Exp(expRep,ty))
+                end
+             | _ => raise Fail "MarkProgram within MarkProgram"
+            (*end case*))
+         | _ => raise Fail "chkProgram without Marks"
+        (*end case*))
+
+    and chkDefs (cxt, defs) = (case defs
+        of [] => cxt   
+         | (ParseTree.MarkDef dm)::rest 
+            => let val (cxt', def) = mark(cxt, dm)
+               in  chkDefs(cxt', def::rest)
+               end
+         | (ParseTree.TypeDef (id, ids, typ))::rest  
+            => chkDefs( updateTCE(cxt, id, ids, typ), rest)
+         | (ParseTree.DataDef (id, ids, cons))::rest 
+            => let val ctx'  = addDataCon (cxt, id, ids) 
+                   val ctx'' = updateTVE (ctx', ids)
+                   val ctxFinal = chkDcon (ctx'', id, ids, cons)
+               in 
+                   chkDefs(ctxFinal, rest)
+               end
+         | (ParseTree.ValDef  bind)::rest 
+            => chkDefs( chkBind(cxt, bind), rest)
+         (*end case*))
+    and chkTyp(ctx, typ) = (case typ 
+        of (ParseTree.MarkTyp dm)
+            => let val (ctx', typ') = mark (ctx, dm)
+               in chkTyp(ctx', typ')
+               end
+         | (ParseTree.PolyTyp(ids, typ)) (*6.3 j1*)
+            => let val ctx' = updateTVE(ctx, ids)
+               in chkTyp(ctx', typ)
+               end
+         | (ParseTree.VarTyp (id)) (*6.3 j6*)
+            => (case AtomMap.find(getTVE(ctx), id)
+                    of SOME tyvar => Type.VarTy(tyvar)
+                     | NONE => raise Fail "type variable id not found in tvE, called by chkTyp"
+                (*end case*))
+         | (ParseTree.ConTyp (id, typs)) (*6.3 j4&5*) 
+            => (case AtomMap.find(getTCE(ctx),id)
+                   of SOME(tycon, tyvars, ty) (*is type definition*) 
+                           => (case TypeUtil.match(tyvars, 
+                                             chkTyp(ctx, ParseTree.TupleTyp typs), 
+                                             ty)
+                                    of SOME(tys) => Type.TupleTy(tys)
+                                     | NONE => Type.ErrorTy (*?????*)
+                                (*end case*))
+                    | NONE => (case AtomMap.find(getDCE(ctx),id) 
+                               of SOME dc (*is data definition*)
+                                       => let val (tyvars,a,ty) = DataCon.sigOf dc
+                                          in TypeUtil.apply(tyvars, ty, map (fn x => chkTyp(ctx, x)) typs)
+                                          end 
+                                | NONE => raise Fail "ConTyp id is in neither tcE nor dcE"
+                                (*end case*))
+                (*end case*))
+         | (ParseTree.FunTyp (typ1, typ2)) (*6.3 j2*)
+            => let val ty1 = chkTyp(ctx, typ1)
+                   val ty2 = chkTyp(ctx, typ2)
+               in  
+                   Type.FunTy(ty1,ty2)
+               end
+         | (ParseTree.TupleTyp (typs)) (*6.3 j3*)
+            => let fun chkTupleTyp (typs, acc) = (case typs
+                   of nil => rev acc
+                    | (t::typs') => let val typn = chkTyp(ctx,t)
+                                   in chkTupleTyp(typs',typn::acc)
+                                   end
+                   (*end case*))
+                   val tys = chkTupleTyp(typs,nil)
+               in 
+                   Type.TupleTy(tys)
+               end
+        (*end case*))
+    and chkExp (ctx, exp) = (case exp
+        of (ParseTree.MarkExp dm)
+            => let val (ctx', exp') = mark (ctx, dm)
+               in chkExp(ctx', exp')
+               end
+         | (ParseTree.IfExp (exp1, exp2, exp3)) (*6.1 j1*)
+            =>  let val (expRep1,exp1Ty) = chkExp(ctx,exp1)
+                    val (expRep2,exp2Ty) = chkExp(ctx,exp2)
+                    val (expRep3,exp3Ty) = chkExp(ctx,exp3)
+                in
+                    if (TypeUtil.same(exp1Ty, Basis.boolTy) andalso TypeUtil.same(exp2Ty,exp3Ty))
+                    then (AST.IfExp(AST.Exp(expRep1,exp1Ty),
+                                    AST.Exp(expRep2,exp2Ty),
+                                    AST.Exp(expRep3,exp3Ty)),
+                          exp3Ty)
+                    else (AST.IfExp(AST.Exp(expRep1,exp1Ty),
+                                    AST.Exp(expRep2,exp2Ty),
+                                    AST.Exp(expRep3,exp3Ty)),
+                          Type.ErrorTy) (*raise Fail "Type error on chkExp.IfExp"*)
+                end
+         | (ParseTree.BinExp (exp1, id, exp2)) => (case Atom.toString(id) (*wil this work?*)
+                of "::" =>  let val (expRep1,exp1Ty) = chkExp(ctx, exp1)
+                                val (expRep2,exp2Ty) = chkExp(ctx, exp2)
+                            in (case exp2Ty
+                                    of Type.TupleTy tys 
+                                        => if (cmpTyToTys(exp1Ty, tys))
+                                           then (AST.TupleExp(AST.Exp(expRep1,exp1Ty)::
+                                                              AST.Exp(expRep2,exp2Ty):: 
+                                                              nil),
+                                                exp2Ty)
+                                           else (AST.TupleExp(AST.Exp(expRep1,exp1Ty)::
+                                                              AST.Exp(expRep2,exp2Ty)::
+                                                              nil),
+                                                Type.ErrorTy) (*raise Fail "types in tyList do not match"*)
+                                     | _ => raise Fail "attempting to concat non-list objects"
+                                (*end case*))
+                            end
+                 | _    =>  let val (expRep1,exp1Ty) = chkExp(ctx, exp1)
+                                val (expRep2,exp2Ty) = chkExp(ctx, exp2)
+                            in 
+                                if (TypeUtil.same(exp1Ty, exp2Ty) (*andalso??*))
+                                then (AST.AppExp(AST.Exp(expRep1,exp1Ty),
+                                                 AST.Exp(expRep2,exp2Ty)),
+                                      Type.TupleTy(exp1Ty :: 
+                                                   exp2Ty :: 
+                                                   nil))
+                                else raise Fail "binary expression mixes types unacceptable"
+                            end
+                 (*end case*))
+
+         | (ParseTree.AppExp (exp1, exp2)) (*6.7 j3?*)
+            =>  let val (expRep1,exp1Ty) = chkExp(ctx, exp1)
+                    val (expRep2,exp2Ty) = chkExp(ctx, exp2)
+                in (case exp1Ty
+                    of Type.FunTy(fromTy, toTy)
+                        =>  if TypeUtil.same(fromTy, exp2Ty)
+                            then (AST.AppExp(AST.Exp(expRep1,exp1Ty),
+                                             AST.Exp(expRep2,exp2Ty)),
+                                  toTy)
+                            else (AST.AppExp(AST.Exp(expRep1,exp1Ty),
+                                             AST.Exp(expRep2,exp2Ty)),
+                                  Type.ErrorTy) (* raise Fail "incorrect funApp types in chkExp.AppExp" *)
+                     | _ => raise Fail "exp1 of chkExp.AppExp(exp1,exp2) is not a function, cannot be applied"
+                    (*end case*))
+                end
+         | (ParseTree.TyAppExp (exp, typs)) (*6.7 j4*)
+            =>  (case (chkExp(ctx,exp))
+                     of (expRep, Type.FunTy(Type.PolyTy(tyvars, ty),ty2)) 
+                        =>  let fun mapChkTyp (ctx, typs) = 
+                                    let fun map' (ctx,typs, accTys) = (case typs 
+                                        of [] => rev accTys
+                                         | (t::rest) => let val  expTy' = chkTyp(ctx,t)
+                                                        in map'(ctx,rest,expTy'::accTys)
+                                                        end
+                                        (*end case*))
+                                    in
+                                        map'(ctx,typs,[])
+                                    end
+                                val tys = mapChkTyp(ctx, typs)
+                                val (expRep, expTy) = chkExp(ctx,exp)
+                            in (AST.TyAppExp(AST.Exp(expRep, expTy), tys),
+                                TypeUtil.apply(tyvars, ty2, tys)) (*double check this*)
+                            end 
+                      | _ => (AST.TyAppExp(AST.Exp(chkExp(ctx,exp)),nil),
+                              Type.ErrorTy) (*raise Fail "someone tried to sneak a non fun ty into tyAppExp!"*)
+                (*end case*))
+         | (ParseTree.VarExp (id))
+            =>  (case AtomMap.find(getVE(ctx), id)
+                    of SOME var => (AST.VarExp(var),
+                                    Var.typeOf(var))
+                     | NONE => (AST.VarExp(Var.new(Atom.atom("id not found in VE"),Type.ErrorTy)),
+                                Type.ErrorTy)(*raise Fail "no id found in vE"*)
+                (*end case*))
+         | (ParseTree.ConExp (id)) 
+            =>  (case AtomMap.find(getDCE(ctx), id)
+                    of SOME dc => (AST.ConExp(dc), 
+                                   DataCon.typeOf(dc))
+                     | NONE => (AST.VarExp(Var.new(Atom.atom("id not found in DCE"),Type.ErrorTy)),
+                                Type.ErrorTy)(*raise Fail "datacon id not found in DCE. love, chkExp.ConExp"*)
+                 (*end case*))
+         | (ParseTree.IntExp (i)) => (AST.IntExp(i), 
+                                      Basis.intTy)
+         | (ParseTree.StrExp (str)) => (AST.StrExp(str), 
+                                        Basis.stringTy)
+         | (ParseTree.TupleExp (exps)) 
+            =>  let fun mapChkTuple (ctx, exps, accTys, accReps) = (case exps
+                        of [] => (rev accReps, rev accTys)
+                         | e::rest => let val (expRep, expTy) = chkExp(ctx,e)
+                                      in mapChkTuple(ctx, rest, expTy::accTys, expRep::accReps)
+                                      end
+                        (*end case*))
+                    val (expReps, expTys) = mapChkTuple(ctx, exps, [], [])
+                    val repsTysList = ListPair.zip(expReps,expTys)
+                    val expifyRTL = map (fn (a,b) => AST.Exp(a,b)) repsTysList
+                in (AST.TupleExp(expifyRTL),
+                    Type.TupleTy(expTys))
+                end (*AST.Exp(expReps,expTys)*)
+         | (ParseTree.CaseExp (exp, case_matches)) 
+            =>  let val (expRep,expTy) = chkExp(ctx, exp)
+                    val (patExp, cmTy) = chkCaseMatch(ctx, expTy, case_matches) (*assume for now that chkCase Match returns
+                                                                                  the type as well as AST.Rule of pat*exp *)
+                in (AST.CaseExp(expRep, patExp), 
+                    expTy)
+                end
+         | (ParseTree.LetExp scope) 
+            =>  let val (bind,exp,scopeTy) = chkScope(ctx,scope)
+                in (AST.LetExp(bind, exp),
+                    scopeTy) 
+                end
+        (*end case*))
+    and chkCaseMatch (cxt, ty, cases) = 
+        let 
+            fun loop (cx, t, cs) = (case cs                
+                of [] => [] 
+                 | (ParseTree.MarkCaseMatch cm)::rest 
+                    => let val (cxt',tr) = mark(cx,cm)
+                       in  loop (cxt', t, tr::rest) 
+                       end
+                 | (ParseTree.CaseMatch(pat,scope))::rest 
+                    => let val (p, cxt')  = chkPat (cx, t, pat)
+                           val cxt'' = envMerge (cx, cxt')
+                           val (bn,exp,newTy) = chkScope (cxt'', scope)
+                           val ret = (AST.Rule(p,exp), newTy)
+                        in
+                           (ret::loop(cx, t, rest))
+                        end)
+
+            val ret = loop (cxt, ty, cases)
+            val ty  = foldr (fn((x1,x2),(y1,y2)) => 
+                    if TypeUtil.same(x2,y2) then x2 else raise Fail "error: scope types don't match")
+                      (hd ret) (tl ret)
+            val rs  = List.append((foldr (fn((x1,x2),(y1,y2)) => x1::x2) (hd ret) (tl ret)), [])
+                    
+        in
+           (rs, ty)    
+        end 
+    and chkBind (ctx, bind) = (case bind 
+        of (ParseTree.MarkBind dm)                    
+            => let val (ctx', bind') = mark (ctx, dm)
+               in chkBind(ctx', bind')
+               end
+         | (ParseTree.FunBind (id, params, typ, exp)) (*fun id (params) : typ = exp *)
+            => let val (ctx', typ, retTyp) = chkFnSig(ctx,id,params,typ)
+                   val (retRep,retTyp') = chkExp(ctx', exp)
+                in if TypeUtil.same(retTyp, retTyp')
+                   then updateVE(ctx, id, typ)
+                   else raise Fail "function binding types do not match"
+                end
+         | (ParseTree.ValBind (pat, maybeTyp, exp)) (*pat_ : typ => exp*)
+            => (case maybeTyp
+                of SOME(typ) 
+                    => let  val typTy = chkTyp(ctx,typ)
+                            val (expRep,expTy) = chkExp(ctx, exp)
+                            val ctx'  = chkSpat(ctx, typTy, pat)
+                        in if (TypeUtil.same(typTy, expTy))
+                           then envMerge (ctx, ctx')
+                           else raise Fail "Error: pattern typ and exp typ do not match in ValBind"
+                        end 
+                 | NONE      
+                    => let val (expRep,expTy) = chkExp(ctx, exp)
+                           val ctx'  = chkSpat(ctx, expTy, pat)
+                       in envMerge (ctx, ctx')
+                       end
+                 (*end case*))
+         | (ParseTree.ExpBind exp)
+            => let val (expResultRep,expResultTy) = chkExp(ctx,exp) 
+               in if TypeUtil.same(expResult, Basis.unitTy) 
+                  then ctx
+                  else raise Fail "todo: prevent error propagation when ExpBind !: unit"
+               end 
+        (*end case*))
+
+    and chkFnSig (ctx,id,params,typ) = (case  params
+        of [] => raise Fail "I think this means that the FnSig's param was just a MarkParam, which does not jive"
+         | (ParseTree.MarkParam pm)::rest => let val (ctx', tr) = mark(ctx, pm)
+                                             in chkFnSig(ctx',id,rest,typ)
+                                             end
+         | (ParseTree.TyParam(ids))::rest => let val ctx' = updateTVE(ctx, ids)
+                                                 val retTy = AtomMap.lookup(getTVE(ctx'),id)
+                                                 val (ctx'', funTy, retTy) = chkFnSig(ctx',id,rest,typ)
+                                             in (ctx'', funTy, retTy)
+                                             end 
+         | (ParseTree.ValParam(id',typ))::rest => let val typTy = chkTyp(ctx, typ)
+                                                      val ctx' = updateTVE(ctx,id'::nil) (*should this by updateTCE somehow?*)
+                                                      val (ctx'', funTy, retTy) = chkFnSig(ctx',id,rest,typ) (*should recur through all params, right?*)
+                                                  in (ctx'', funTy, retTy)
+                                                  end
+        (*end case*))
+    and chkDcon (cxt, id, ids, cons) = 
+        let val tyvars = map (fn x => TyVar.new x) ids
+            val tycon = TyCon.new (id, tyvars)
+            val tve = getTVE cxt  
+            val tce = getTCE cxt
+            val ve  = getVE  cxt
+            val err = getERR cxt 
+            val span = getSPAN cxt 
+
+            fun loop (env, cons') = (case cons'
+                of [] => let val dce = envMergeHelper((getDCE cxt), env)
+                         in  C {errS = err, span = span, tvE = tve, tcE = tce, dcE = dce, vE = ve} end  
+                 | (ParseTree.Con (id', typop))::rest
+                     => let val t   = typToTyOp typop 
+                            val dce = AtomMap.insert(AtomMap.empty, id', (DataCon.new (tycon, id', t)))
+                            val env' = envMergeHelper (env, dce)
+                        in  loop(env', rest) end
+                 | (ParseTree.MarkCon cm)::rest => let val (cxt', tr) = mark(cxt, cm)
+                                                   in  chkDcon(cxt', id, ids, tr::rest) end
+                (* end case *))
+        in
+            loop (AtomMap.empty, cons)
+        end 
+    and chkPat (cxt, ty, pat) = (case pat
+        of ParseTree.MarkPat pm => let val (cxt', tr) = mark(cxt, pm)
+                                   in  chkPat(cxt', ty, tr)
+                                   end
+         | ParseTree.VarPat id => chkSpat(cxt, ty, pat)
+         | ParseTree.WildPat   => chkSpat(cxt, ty, pat)
+         | ParseTree.TuplePat ps => (case ty
+            of Type.TupleTy tys  => 
+                let fun mapSPAT (cx, tys, pats) = (case (tys, pats)
+                     of ([],[]) => []
+                      | ((t::ts),(p::ps)) => (chkSpat(cx, t, p))::(mapSPAT(cx, ts, ps))
+                      | _ => raise Fail "mapSpat: somehow was given unequal lists"
+                      (*end case*))
+
+                    fun foldfun ((ast1,env1), (ast2,env2)) = ((ast1),(envMerge(env1,env2)))
+                    fun getVars pss = (case pss
+                        of [] => []
+                         | ((AST.VarPat v),_)::rest => v::(getVars rest)
+                         | _ => raise Fail "this shouldn't happen")
+                    
+                    val pc = mapSPAT(cxt, tys, ps)
+                    val vs = getVars pc
+                    val (z,cxt') = foldr foldfun (hd pc) (tl pc)
+   
+                in 
+                     if (length tys) = (length ps) 
+                     then ((AST.TuplePat vs),cxt')
+                     else raise Fail "Error: chkPat: arity of type list does not match pattern list"
+                end
+            | _ => raise Fail "Error: chkPat: expected type is not a tuple type!"
+            (* end case *))
+         | ParseTree.ConPat(id, patOp) => (case patOp
+            of NONE   => (case (AtomMap.find(getDCE(cxt), id))
+                            of NONE   => raise Fail "Error: chkPat: data constructor not found"
+                             | SOME t => if (TypeUtil.same(DataCon.typeOf t, ty))
+                                         then ((AST.ConPat (t,[ty])) ,cxt) 
+                                         else raise Fail "Error: chkPat: expected type and dcon type don't match"
+                            (* end case *))
+             | SOME p => raise Fail "need todo"
+            (* end case *))
+        (* end case *))
+    and chkScope (cxt, scope) = (case scope
+        of ParseTree.MarkScope pm => let val (cxt', tr) = mark(cxt, pm)
+                                     in  chkScope(cxt', tr) end
+         | ParseTree.Scope(binds, ex) => 
+                let 
+                    fun loop (ctx, bns) = (case bns
+                        of []      => ctx
+                         | b::[]   => let val (bin,cxt') = chkBind(cxt,b)
+                                      in
+                                          (bin,cxt')
+                                      end
+                         | b::rest => let val (bin,cxt') = chkBind(cxt,b)
+                                      in loop(cxt', rest)
+                                      end)
+
+                    val (bn,cxt2) = loop(cxt,binds)
+                    val (exp_rep,ty) = chkExp(cxt2,ex)
+                    val ret = AST.Exp(exp_rep,ty)
+                in 
+                    (bn,ret,ty)  
+                end
+        (* end case *))
+    and chkSpat(cxt, typ, pat) = (case pat
+        of ParseTree.MarkPat pm => let val (cxt', tr) = mark(cxt, pm)
+                                   in  chkSpat(cxt', typ, tr) 
+                                   end
+         | ParseTree.VarPat id  =>  let val cxt' = (updateVE2(cxt, id, typ))
+                                        val v    = AtomMap.lookup(getVE(cxt'),id)
+                                    in  
+                                        (AST.VarPat v, cxt')
+                                    end
+         | ParseTree.WildPat    => let val err = getERR cxt
+                                       val sp  = getSPAN cxt
+                                       val empt = AtomMap.empty
+                                       val cxt' = C {errS = err, span = sp, tvE = empt, tcE = empt, dcE = empt, vE = empt}
+                                   in
+                                       (AST.VarPat(Var.wild typ), cxt')
+                                   end
+         | _                    => raise Fail "Error: reached non simple pat in chkSpat"
+        (* end case *))
+
+
+    (* general TODO
+    - binding checker 
+    	- look for unbound variables 
+    	- does NOT output AST
+    	- "Establish the basic structure of the implementation"
+    - implement type checker
+    	- check for unbound variables
+    	- check types
+    	- does NOT produce AST
+    	- extends binding checker
+    	- closesly match rules from Section 6
+    - implement "full type checker"
+    	- find unbound variables, 
+    	- check types 
+    	- produces AST
+    	- requires "additional information" in environment and in return type of each fxn
+    - finally do full type checker + section 2 syntax restrictions
+
+    - error reporting
+    	- first make it so it dies after if finds an error
+    	- if we have time, do one that sets the type to errorTy and continues
+    *)
+
+    (* Notes on Tips
+	- define a “context” type that groups the envronments with the current span and the error stream using Atom.map
+	-  Each judgement can be implemented as a function
+		- the functions for judgements that type check expressions, match rules, and declarations will be mutually recursive. 
+		- Each function for a judgement will have a case for each typing rule with that judgement as the conclusion.
+    *)
+  end

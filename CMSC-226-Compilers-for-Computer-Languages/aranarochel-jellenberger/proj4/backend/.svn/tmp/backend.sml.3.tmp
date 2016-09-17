@@ -1,0 +1,488 @@
+(* backend.sml
+ *
+ * CMSC22610 Winter 2015 Sample code.
+ *
+ * COPYRIGHT (c) 2015 John Reppy (http://cs.uchicago.edu/~jhr)
+ * All rights reserved.
+ *
+ * This module glues together the backend passes that constitute Project 4.
+ *)
+
+structure Backend : sig
+
+    type flags = {
+	printAST : bool,	(* if true, print the simplified AST *)
+	printSIR : bool,	(* if true, print the Simple IR to a file *)
+	printCode : bool	(* if true, print the bytecode to a file *)
+      }
+
+    val compile : flags -> string * AST.program -> unit
+
+  end = struct
+
+  	structure BN = BasisNames
+
+  	(* representation of data constructors *)
+	datatype conRep = NullCon of int
+  	                | DConIm  of Type.ty 
+  	                | DConTup of int * Type.ty
+
+  	(* representation of types *)
+  	datatype typeRep = Unboxed
+  	                 | Boxed
+  	                 | Mixed
+
+  	(* initial data constructor representation hash table *)
+  	val dataConTbl : conRep  DataCon.Tbl.hash_table = 
+  		let val tbli = DataCon.Tbl.mkTable (100, Fail "Data Con not found")
+            val _ = DataCon.Tbl.insert tbli (Basis.unitUnit, NullCon 0)
+            val _ = DataCon.Tbl.insert tbli (Basis.boolFalse, NullCon 0)
+            val _ = DataCon.Tbl.insert tbli (Basis.boolTrue, NullCon 1)
+            val _ = DataCon.Tbl.insert tbli (Basis.listNil, NullCon 0)
+        in
+        	tbli
+       	end
+
+
+    (* initial type representation hash table *)
+  	val typesTbl : typeRep TyCon.Tbl.hash_table = 
+  		let val tbli = TyCon.Tbl.mkTable (100, Fail "Type not found")
+  			val _ = TyCon.Tbl.insert tbli (Basis.boolTyc, Unboxed)
+  			val _ = TyCon.Tbl.insert tbli (Basis.intTyc, Unboxed)
+  			val _ = TyCon.Tbl.insert tbli (Basis.listTyc, Mixed)
+  			val _ = TyCon.Tbl.insert tbli (Basis.stringTyc, Boxed)
+  			val _ = TyCon.Tbl.insert tbli (Basis.unitTyc, Unboxed)
+  		in
+  			tbli
+  		end
+
+  	(* initial free variable hash table *)
+  	val freevarsTbl : Var.Set.set Var.Tbl.hash_table =
+  		Var.Tbl.mkTable (200, Fail "Free Variable not found")
+
+  	
+
+    type flags = {
+	printAST : bool,	(* if true, print the simplified AST *)
+	printSIR : bool,	(* if true, print the Simple IR to a file *)
+	printCode : bool	(* if true, print the bytecode to a file *)
+      }
+
+    fun printIR (mkStrm, printFn, ext) = let
+	  fun pr (false, _, _, prog) = prog
+	    | pr (true, info, stem, prog) = let
+		val outS = TextIO.openOut(OS.Path.joinBaseExt{base=stem, ext=SOME ext})
+		val strm = mkStrm (outS, info)
+		in
+		  printFn (strm, prog) handle ex => (TextIO.closeOut outS; raise ex);
+		  TextIO.closeOut outS;
+		  prog
+		end
+	  in
+	    pr
+	  end
+
+    fun compile {printAST, printSIR, printCode} (stem, prog) = let
+val prog = raise Fail "Backend.compile" (** YOUR CODE HERE **)
+	(* then generate code *)
+	  val codeS = Emit.openCode (OS.Path.joinBaseExt{base=stem, ext=SOME "vmo"})
+	  in
+	    CodeGen.gen (codeS, prog);
+	  (* dump a textual representation of the code if necessary *)
+	    if printCode
+	      then let
+		val outS = TextIO.openOut(OS.Path.joinBaseExt{base=stem, ext=SOME "vm"})
+		in
+		  Emit.dump (outS, codeS);
+		  TextIO.closeOut outS
+		end
+	      else ();
+	  (* resolve offsets in the code and write it to the object file *)
+	    Emit.finish codeS
+	  end
+
+
+	fun uncurry exp = (case exp 
+		of 	AST.Exp(AST.LetExp (bind, AST.Exp(exp_rep,ty)), expTy) => (case bind
+			of AST.FunBind (var, params, expb) => 
+				let fun lp (v, ps, expb') = (case ps
+					of [] => expb'
+				 	 | p::ps' => AST.Exp(AST.LetExp(AST.FunBind(v,[p],lp(v,ps',expb)),lp(v,ps',expb)),ty)
+				 	 (*end case*)) 
+				in AST.Exp(AST.LetExp(AST.FunBind(var,[hd(params)],lp(var,tl(params),expb)),AST.Exp(exp_rep,ty)), expTy)
+				end
+			| _ => exp
+			(*end case*))
+		| _ => exp
+		(*end case*))
+
+	fun etaConvert exp = (case exp
+		(*| datacons *)
+		of AST.Exp(AST.ConExp(dcon), ty) => let 
+				val name = DataCon.nameOf(dcon) 		(*name of the dcon*)
+				val isNully = DataCon.isNullary(dcon) 	(*is nullary data constructor*)
+				val tyCon = DataCon.tycOf(dcon) 		(*data-type constructor this dcon belongs to*)
+				val typOf = DataCon.typeOf(dcon) 		(*polymorphic if owning data type is parameterized, funTy if !isNully*)
+			
+				val (dcTyvars, dcTyOpt, dcTy) = DataCon.sigOf(dcon)
+				val bindVar = Var.new(Atom.atom("mk"^name), ty)
+				val bind = if (isSome(dcTyOpt)) (*if owning type is parameterized*)
+						   then AST.FunBind(bindVar, [AST.TyParam(dcTyvars)], AST.Exp(AST.ConExp(dcon), typOf)) (*want: what does this dcon do*)
+						   else AST.FunBind(bindVar, [AST.TyParam(dcTyvars)], AST.Exp(AST.IntExp(0), typOf)) (*NONE case? maybe?*)
+				val exp = AST.Exp( AST.TyAppExp(AST.Exp(AST.VarExp(bindVar),typOf),[valOf(dcTyOpt)]), typOf) (*want: what do we apply this dcon to*)
+			in 
+				AST.Exp(AST.LetExp(bind, exp),ty)
+			end
+	   (*| Primitive functions - i think eta expansion into tuples happens later?*)
+	   	 | AST.Exp(
+	   	 		AST.AppExp(
+	   	 			AST.Exp(AST.VarExp(operator), opTy),
+	   	 			AST.Exp(exp2, exp2Ty)),
+	   	 		resultTy)
+	   	 	=> (case operator
+	   	 			of ignore => AST.Exp(exp2, Basis.unitTy)
+	   	 			 | _ => exp
+	   	 		(*end case*))
+		 | _ => exp 
+		 (*end case*))
+	
+	  
+
+
+	(* helper function that return the rep of a typ arg. Used in mapReps *)
+	fun typRepFind (typ,typTbl) = (case typ
+		of Type.VarTy _ => Mixed
+		 | Type.FunTy (_,_) => Boxed
+		 | Type.TupleTy _ => Boxed
+		 | Type.ConTy(tyc,_) => TyCon.Tbl.lookup typTbl (tyc)
+		 | _ => raise Fail "dunno what to do about abstract types"
+		 (* end case *))
+
+
+	(* Maps list of nullary constructors to their reps *)
+	fun mapNulls (nulls, nindex, tbl) = (case nulls
+		of []                          => tbl 
+		 | n::nulls' => let val _ = DataCon.Tbl.insert tbl (n, NullCon nindex)
+					                      in
+					                       	  mapNulls(nulls', nindex+1, tbl)
+					                      end
+		(* end case *))
+
+
+	(* Maps list of non-nullary constructors to their reps *)
+	fun mapDcons (dcons, dindex, tbl) = (case dcons
+		of []	      => tbl
+		 | dc::dcons' => 
+		 	let val (_, SOME typ, _) = DataCon.sigOf(dc)
+		 		val _ = DataCon.Tbl.insert tbl (dc, DConTup(dindex,typ))
+		 	in
+		 		mapDcons(dcons', dindex+1, tbl)
+		 	end
+		(* ene case *))
+
+
+
+	(* helper function for findDCs that maps data constructors to their reps in a hash table *)
+	fun mapReps (typname, nulls, nindex, dcons, dindex, dconTbl, typTbl) = (case (nulls, dcons)
+		of (n::nulls', []) => 
+			let val _    = TyCon.Tbl.insert typTbl (typname, Unboxed)
+	            val dtbl = mapNulls(nulls,nindex,dconTbl)
+            in
+             	(dtbl, typTbl)
+            end
+		 | ([],[dc]) =>  
+		 	let val (_, SOME typ, _) = DataCon.sigOf(dc)
+		        val tyrep = typRepFind(typ, typTbl)
+		        val _ = TyCon.Tbl.insert typTbl (typname, tyrep)
+		        val _ = DataCon.Tbl.insert dconTbl (dc, DConIm typ)
+		    in
+		   	    (dconTbl,typTbl)
+		    end
+		 | (n::nulls',[dc]) =>
+		 	let val (_, SOME typ, _) = DataCon.sigOf(dc)
+		 		val tyrep = typRepFind(typ, typTbl)
+		 		val dconval = if tyrep = Boxed then DConIm(typ) else DConTup(0,typ)
+		 		val _ = TyCon.Tbl.insert typTbl (typname, Mixed)
+		 		val _ = DataCon.Tbl.insert dconTbl (dc, dconval)
+		 		val dtbl = mapNulls(nulls,nindex,dconTbl)
+		 	in
+		 		(dtbl, typTbl)
+		 	end
+		 | ([], d::dcons') => 
+		 	let val _ = TyCon.Tbl.insert typTbl (typname, Boxed)
+		 	    val dtbl = mapDcons(dcons, dindex,dconTbl)
+		 	in
+		 		(dtbl, typTbl)
+		 	end
+		 | (n::nulls', d::dcons') => 
+		 	let val _ = TyCon.Tbl.insert typTbl (typname, Mixed)
+		 		val dtblN = mapNulls(nulls, nindex, dconTbl)
+		 		val dtblD = mapDcons(dcons, dindex, dtblN)
+		 	in
+		 		(dtblD, typTbl)
+		 	end
+		 (* end case *))
+
+
+	(*Takes AST with Data constructors and returns hash table of constructors mapped to a "description of their representation"*)
+	fun findDCs (exp, dconsTbl, typsTbl) = (case exp
+		of AST.Exp(AST.LetExp(bind,letexp),ty) => 
+			(case bind 
+			   of AST.DataBind(tyc as Type.DataTyc{name, cons, ...}) => 
+			   		let val cs = !cons
+			   	        val nullaries = List.filter (fn x => DataCon.isNullary x) cs
+			   	        val datacons  = List.filter (fn x => not (DataCon.isNullary x)) cs
+
+			   	        val (dataTbl, typTbl) = mapReps (tyc, nullaries, 1, datacons, 1, dconsTbl, typsTbl)
+			   	    in
+			   	    	findDCs(letexp, dataTbl, typTbl)
+			   	   	end
+			   	| _ => findDCs(letexp, dconsTbl, typsTbl)
+			   	(* end case *))
+		 | AST.Exp(_, _) => (dconsTbl, typsTbl)
+		 (* end case *))
+
+
+
+
+	(* helper function that creates a list of all value parameter Var.t's for a given function def *)
+	fun getValueParams params = (case params
+		of [] 					   => []
+		 | (AST.TyParam xs)::ps'   => getValueParams ps'
+		 | (AST.ValParam var)::ps' => var::(getValueParams ps')
+		(* end case *)) 
+
+	(* helper function to get AST.exp list from AST.rule list *)
+	fun expsFromRules rules = (case rules
+		of [] => []
+		 | (AST.Rule(pat,exp))::rules' => exp::(expsFromRules rules')
+		(* end case*))
+
+
+	(* helper function for findFrees that returns a list of free variables in function def *)
+	fun getFrees (exp, vs) = (case exp
+		of AST.Exp(AST.VarExp var, ty) => (case (List.exists (fn v => Var.same(v,var)) vs)
+			of false => [var]
+			 | true => []
+			(* end case*))
+		 | AST.Exp(AST.IfExp(e1,e2,e3), ty) => (getFrees(e1,vs)) @ (getFrees (e2,vs)) @ (getFrees (e3,vs))
+		 | AST.Exp(AST.AppExp(e1,e2), ty)   => (getFrees(e1,vs)) @ (getFrees (e2,vs))
+		 | AST.Exp(AST.TyAppExp(e,tys), ty) => getFrees (e, vs)
+		 | AST.Exp(AST.TupleExp es, ty)     => List.concat (map (fn e => getFrees(e,vs)) es)
+		 | AST.Exp(AST.LetExp(bind, e), ty) => getFrees (e,vs) 
+		 | AST.Exp(AST.CaseExp(e,rules),ty) => let val es = expsFromRules rules
+		 										   val fs = List.concat (map (fn e => getFrees(e,vs)) es)
+		 									   in
+		 									   	   (getFrees (e,vs)) @ fs
+		 									   end
+		 | _ => []
+		(* end case *))
+
+
+	(*Takes AST w/ function definitions and returns hash table(?) of free variable mapped to their functions*)
+	fun findFrees (exp, fvTbl) = (case exp
+		of AST.Exp(AST.LetExp(bind, letexp), ty) => 
+			(case bind
+			   of AST.FunBind(var, params, bindexp) =>
+			   		let val valparams = getValueParams(params)
+			   			val freeslist = getFrees (bindexp, valparams)
+			   			val freeSet   = Var.Set.fromList(freeslist)
+			   			val _ = Var.Tbl.insert fvTbl (var, freeSet)
+			   		in
+			   			findFrees(letexp, fvTbl)
+			   		end
+			    | _ => findFrees(letexp, fvTbl)
+			    (* end case *))
+		 | AST.Exp(_, _) => fvTbl
+		 (* end case *)) 
+
+
+
+
+	(*translate list of parameters into IR*)
+	fun translateParams (params, paramList) = (case params
+		of [] => paramList
+		 | AST.ValParam varp :: ps => translateParams(ps, (Simple.ParameterExp(Var.nameOf(varp)) :: paramList))
+		 | AST.TyParam tvar :: ps => translateParams (ps, paramList)
+		 (*end case*))
+
+	(*translate list of free varialbes into list of IR local variables*)
+	fun translateFrees (vars,varList) = (case vars 
+		of [] => varList 
+		 | v::vs => let
+		 	val index = (case varList 
+		 		of [] => 0
+		 		 | Simple.LocalVarExp v' :: vs' => #2 (v') + 1
+		 		 (*end case*))
+		 	val newLocalVar = Simple.LocalVarExp(Var.nameOf(v), index)
+		 	in
+		 		translateFrees(vs, (newLocalVar :: varList) )
+		 	end
+		 (*end case*))
+
+
+
+	fun indexFrees (vars, i) = (case vars
+		of [] => []
+		 | v::rest => (v,i)::(indexFrees (vars, (i+1)))
+		 (* end case *))
+
+
+	fun initialAST prog = (case prog
+		of AST.Program(exp) => AST.Program(etaConvert (uncurry exp)) 
+		(* end case *))
+
+
+	(*translate AST to simpleIR. functions, data cons, primitives, prim ops, pattern matching*)
+	fun progToIR prog = (case prog
+		of AST.Exp(exp, progTy) => let 
+			val freesDB = findFrees(prog, freevarsTbl)
+			val dcDB = findDCs(prog, dataConTbl, typesTbl)
+
+			(*AST.Exp to Simple.Exp*)
+			fun expToSexp exp = (case exp
+				of AST.Exp(exp', expTy) => (case exp'
+					of AST.IfExp	(e1,e2,e3) => Simple.IfExp	(expToSexp e1, expToSexp e2, expToSexp e3)
+				     | AST.AppExp	(e1,e2) => let
+				     	val var = (case e1
+				     				of AST.Exp(AST.VarExp(v),vTy) => v
+				     				 | AST.Exp(AST.LetExp(AST.FunBind(v, params, fexp),exp),letTy) => v
+				     			  (*end case*))
+				     	val freesSet = Var.Tbl.lookup freesDB var
+				     	val freesList = map (fn v => Var.nameOf v) (Var.Set.listItems freesSet)
+				     	val frees = map (fn (f,i) => Simple.GlobalVarExp(f,i)) (indexFrees(freesList, 1))
+				     	val irE1 = expToSexp(e1)
+				     	val irE2 = expToSexp(e2)
+				     	in 
+				     		Simple.FAppExp (irE1, frees, irE2)
+				     	end 
+				   (*| AST.TyAppExp	(exp',tys) => what does type application mean without types?*)
+					 | AST.TupleExp	(exps) => let
+					 	fun loop (exps, acc) = (case exps
+					 		of [] => Simple.TupleExp(rev acc)
+					 		 | e::es => loop(es, expToSexp(e) :: acc)
+					 		(*end case*))
+					 	in
+					 		loop(exps, [])
+					 	end
+				     | AST.LetExp	(bind,exp'') => (case bind 
+				     	of AST.DataBind(tycon) => expToSexp exp'' (*add bindings or something?*)
+				     	 | AST.FunBind(var,params, fbexp) => let
+				     	 	val exp1 = Simple.LocalVarExp(Var.nameOf(var),0)
+				     	 	val exp2 = expToSexp fbexp (*what about the params?*)
+				     	 	val exp3 = expToSexp exp''
+				     	 	in 
+				     	 		Simple.LetExp(exp1, exp2, exp3)
+				     	 	end
+				     	 | AST.ValBind(var, vbexp) => let 
+				     	 	(*val _ => insert into hash table?*)
+				     	 	val newVar = Simple.LocalVarExp(Var.toString(var),0(*we should figure out how to manage indexing locals*))
+				     	 	in 
+				     	 		Simple.LetExp(newVar, expToSexp vbexp, expToSexp exp'')
+				     	 	end
+				     	 (*end case*))
+				     | AST.CaseExp (exp', rules) => let 
+				     	fun loop (rules, counter, acc) = (case rules
+				     		of [] => acc
+				     		 | r::rs => (case r
+				     		 	of AST.Rule(pat, pexp) => (case pat
+				     		 		of AST.VarPat(v) 
+				     		 			=> loop([], counter + 1, 
+				     		 				Simple.LetExp(Simple.LocalVarExp(Var.toString(v), counter),
+				     		 							  expToSexp pexp,
+				     		 							  expToSexp exp')
+				     		 				)
+				     		 		 | AST.TuplePat(v::[])
+				     		 		  	=> loop ([], counter + 1, 
+				     		 		  		Simple.LetExp(Simple.LocalVarExp(Var.toString(v), counter),
+				     		 		  					  acc,
+				     		 		  					  expToSexp exp')
+				     		 		  		)
+				     		 		 | AST.TuplePat(v::vs) 
+				     		 		 	=> loop ([AST.Rule(AST.TuplePat(vs),pexp)], counter + 1, 
+				     		 		 		Simple.LetExp(Simple.LocalVarExp(Var.toString(v), counter),
+				     		 		 					  expToSexp pexp,
+				     		 		 					  acc))
+				     		 		 | AST.ConPat(dcon,tys) 
+				     		 		 	=> let val isNully = DataCon.isNullary(dcon)
+				     		 		 	   in  if isNully
+				     		 		 	   	   then loop([], counter + 1, 
+				     		 		 	   	   		expToSexp pexp)
+				     		 		 	   	   else loop([], counter + 1, 
+				     		 		 	   	   		Simple.Letexp(Simple.LocalVarExp(DataCon.nameOf(dcon), counter),
+				     		 		 	   	   					  expToSexp pexp,
+				     		 		 	   	   					  acc)
+				     		 		 	   	   		) 
+				     		 		 	   end
+				     		 		 | _ => raise Fail "todo"
+				     		 	(*end case*))
+				     		 (*end case*))
+				     	(*end case*))
+				     	in 
+				     		loop (rules, 0, Simple.NumExp(0))
+				     	end
+				     | AST.VarExp	(var) => Simple.LocalVarExp (Var.toString var, 0)
+				   (*| AST.ConExp	(dcon) => Simple.ConExp () does this still exist?*)
+					 | AST.IntExp	(i) => Simple.NumExp (IntInf.toInt(i))
+					 | AST.StrExp	(str) => Simple.StringExp (str)
+					 | _ => raise Fail "todo"
+					(*end case*))
+				(*end case*))
+
+			(*AST.Exp to Simple.Definition, or rather to [Simple.Function]*)
+			fun expToDef exp = (case exp
+				of AST.Exp(exp',expTy) => (case exp'
+					of AST.AppExp(exp1, exp2) => (case exp1 
+					 	of AST.Exp(AST.LetExp(AST.FunBind(var, params, exp''), bindExp),letExpTy) => let
+					 			val freesSet = Var.Tbl.lookup freesDB var 
+								val freesList = map (fn v => Var.nameOf v) (Var.Set.listItems freesSet)
+				     			val freesExp = map (fn (f,i) => Simple.GlobalVarExp(f,i)) (indexFrees(freesList, 1))
+						 		val function = Var.nameOf(var) (*will throw an exception until we get lookup sorted*)
+						 		val paramList = translateParams (params, [])
+						 		val sExp = expToSexp (AST.Exp(exp',expTy)) (*still application at this point*)
+						 	in
+						 		[Simple.Function(function, paramList, freesExp, sExp)]
+						 	end
+					 	(*end case*))
+					 | AST.TyAppExp(exp, tys) => raise Fail "how do I ignore an exp?"
+					 | AST.TupleExp(exps) => raise Fail "this should work, but it doesn't compile?"
+					 	(*let
+					 	fun loop (exps, acc) = (case exps 
+					 		of [] => rev acc
+					 		 | e::es => loop(es, (expToDef(e) :: acc))
+					 		 (*end case*))
+						 in
+						 	loop (exps, [])
+						 end*)
+					 | AST.LetExp(bind, exp') => (case bind 
+						of AST.FunBind(var, params, AST.Exp(bindExp,bindExpTy)) => 
+							let 
+								val freesSet = Var.Tbl.lookup freesDB var
+								val freesList = map (fn v => Var.nameOf v) (Var.Set.listItems freesSet)
+				     			val freesExp = map (fn (f,i) => Simple.GlobalVarExp(f,i)) (indexFrees(freesList, 1))
+								val paramList = translateParams (params, [])
+								val sExp = expToSexp exp'
+								val subExpDef = expToDef(AST.Exp(bindExp,bindExpTy)) (*what do i do with this??*)
+							in 
+								[Simple.Function(Var.nameOf(var), paramList, freesExp, sExp)] 
+							end
+						 | AST.DataBind(tycon) => raise Fail "what do"
+						 | AST.ValBind(var, exp') => raise Fail "add val to globals?"
+						 (*end case*))
+					  | AST.CaseExp(exp, rules) => raise Fail "see pattern matching section"
+					  | AST.VarExp(var) => raise Fail "add var to global variables?"
+					  | AST.ConExp(dcon) => raise Fail "add dcon to... somewhere?"
+					  | AST.IntExp(i) => [Simple.Function(IntInf.toString(i), [], [], Simple.NumExp(IntInf.toInt(i)))]
+					  | AST.StrExp(s) => [Simple.Function(s, [], [], Simple.StringExp(s))]
+					(*end case*))
+				(*end case*))
+			(*nuf*)
+		in 
+			expToDef prog (*remember: return def >list<*)
+		end
+	(*end case*))
+
+
+  end
+
+

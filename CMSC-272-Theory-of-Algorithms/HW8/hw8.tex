@@ -1,0 +1,77 @@
+%Do not change 
+\documentclass[12pt, oneside]{article}
+\usepackage{amssymb,amsmath}
+\usepackage[margin=1in]{geometry}
+\usepackage{textpos}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+
+
+% You may add the packages you need here
+
+
+
+\begin{document}
+%Do not modify
+\begin{textblock*}{4cm}(-1.7cm,-2.3cm)
+\noindent {\scriptsize CMSC 27200 Spring 2016} 
+\end{textblock*}
+
+%Do not modify other than putting your name where stated
+\begin{textblock*}{8cm}(12.5cm,-2.3cm)
+\noindent {Name: Jaime Arana-Rochel} 
+\end{textblock*}
+
+
+\vspace{1cm}
+
+\makeatletter
+\setlength{\@fptop}{0pt}
+\makeatother
+
+%Do not modify other than typing the homework number after #
+\begin{center}
+\textbf{\Large Homework \#8}
+\end{center}
+
+
+%Rest should contain your solution for the homework. Feel free to improvise in ways that you believe make grading easier.
+\subsection*{Q1: Exercise 2 Chapter 8}
+\underline{Claim:} $Diverse$ $Subset$ $\in NP$.\\
+Given a set $S$ of $k$ customers, we can check in polynomial time that no two customers bought the same product.\\\\
+\underline{Claim:} $Independent$ $Set$ $\leq_p$ $Diverse$ $Subset$\\
+Given a graph $G$ and $k$, we assign a customer for every vertex in $G$, and assign a product for every edge. We then create a 2-D array $A$ where we specify that customer $v$ bought product $e$ if vertex $v$ is incident to edge $e$.\\
+With this construction, the array $A$ has a diverse subset of size $k$ if and only if $G$ has an independent set of size $k$. First, if the array has a diverse subset of size $k$, then the associated vertices of $G$ form an independent set of size $k$ since no two vertices would be incident to the same edge. If $G$ has an independent set of size $k$, then the corresponding customers in $A$ form a diverse subset since no two customers would have bought the same product (they are not incident to the same product edge).\\\\
+Having shown these two claims, we know that $Diverse Subset$ is $NP$-$Complete$.\\
+
+\subsection*{Q2: Exercise 7 Chapter 8}
+\underline{Claim:} $4$-$Dimensional$ $Matching$ $\in NP$.\\
+Given a set of $n$ 4-tuples, we can verify in polynomial time that each element from the union of these 4-tuples is disjoint.\\\\
+\underline{Claim:} $3$-$Dimensional$ $Matching$ $\leq_p$ $4$-$Dimensional$ $Matching$\\
+Given an instance of $3$-$Dimensional$ $Matching$ with sets $X$,$Y$,$Z$ and collection of ordered triples $A$, we construct an instance of $4$-$Dimensional$ $Matching$. We will have sets $W$,$X$,$Y$,$Z$ and we create our collection of ordered 4-tuples $B$ such that a 4-tuple ($w_i$,$x_k$,$y_l$,$z_m$) is defined for every triple ($x_k$,$y_l$,$z_m$) in $A$ ($1 \leq i,k,l,m \leq n$). Thus given either a triple of 4-tuple, we can derive either a 4-tuple or triple respectively.\\
+So, we have 4-dimensional matching in our instance if and only if there is a 3-dimensional matching. Given a set of $n$ disjoint triples in $A$, we can derive $n$ disjoint 4-tuples in $B$. If we're given $n$ disjoint 4-tuples in $B$, then we can derive $n$ disjoint triples in $A$.\\\\
+This completes the reduction, which means that $4$-$Dimensional$ $Matching$ is indeed $NP$-$Complete$.\\
+
+\subsection*{Q2: Exercise 22 Chapter 8}
+Since the arbitrary graph $G$ might not be connected, we simply introduce an extra vertex $u$ to $G$ and add an edge from $u$ to every other vertex in $G$. Now it is connected. Now we use our black-box algorithm $A$ to ask whether our new graph $G'$ has an independent set of size at least k and return the answer. Building $G'$ takes polynomial time in construction. Also, it is clear to see that the original graph $G$ has an independent set of size at least $k$ if $G'$ has an independent set. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}

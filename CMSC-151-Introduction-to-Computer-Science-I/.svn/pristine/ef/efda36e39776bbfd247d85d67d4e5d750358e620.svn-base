@@ -1,0 +1,96 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-intermediate-reader.ss" "lang")((modname lab3-starter) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ())))
+;; YOUR NAME HERE
+;; YOUR CNET
+;; CS151 Autumn 2012, Lab 3
+
+;; ====== Data Definitions ======
+
+;; a state-rate is a (make-state-rate abbrev pct)
+;; where abbrev is a symbol
+;;   and pct is a number
+(define-struct state-rate (abbrev pct))
+
+;; a (listof state-rate) is either
+;; - empty, or
+;; - (cons r rs) where r is a state-rate and rs is a (listof state-rate)
+
+;; an item is a (make-item kind price quantity)
+;; where kind is a symbol ('hat, 'jacket, etc.),
+;;       price is a num (in dollars), and
+;;       quantity is a num
+(define-struct item (kind price quantity))
+
+;; a (listof item) is either
+;; - empty, or
+;; - (cons i items) where i is an item, and items is a (listof item)
+
+;; a bill is a (make-bill items items-price sales-tax s&h total)
+;; where items is a (listof item),
+;;       items-price is a num (in dollars),
+;;       sales-tax is a num (in dollars),
+;;       s&h (shipping and handling) is a num (in dollars), and
+;;       total is a num (in dollars)
+(define-struct bill (items items-price sales-tax s&h total))
+
+;; ====== Tax Data ======
+
+;; all-state-rates : (listof state-rate)
+;; list of all state sales tax rates
+;; source: Wolfram Alpha Oct 15 2012
+(define all-state-rates
+  (list (make-state-rate 'AK 0)
+        (make-state-rate 'AL 0.04)
+        (make-state-rate 'AR 0.06)
+        (make-state-rate 'AZ 0.066)
+        (make-state-rate 'CA 0.0625)
+        (make-state-rate 'CO 0.029)
+        (make-state-rate 'CT 0.0635)
+        (make-state-rate 'DE 0)
+        (make-state-rate 'FL 0.06)
+        (make-state-rate 'GA 0.04)
+        (make-state-rate 'HI 0.04)
+        (make-state-rate 'IA 0.06)
+        (make-state-rate 'ID 0.06)
+        (make-state-rate 'IL 0.0625)
+        (make-state-rate 'IN 0.07)
+        (make-state-rate 'KS 0.063)
+        (make-state-rate 'KY 0.06)
+        (make-state-rate 'LA 0.04)
+        (make-state-rate 'MA 0.0625)
+        (make-state-rate 'MD 0.06)
+        (make-state-rate 'ME 0.05)
+        (make-state-rate 'MI 0.06)
+        (make-state-rate 'MN 0.06875)
+        (make-state-rate 'MO 0.04225)
+        (make-state-rate 'MS 0.07)
+        (make-state-rate 'MT 0)
+        (make-state-rate 'NC 0.0475)
+        (make-state-rate 'ND 0.05)
+        (make-state-rate 'NE 0.055)
+        (make-state-rate 'NH 0)
+        (make-state-rate 'NJ 0.07)
+        (make-state-rate 'NM 0.05125)
+        (make-state-rate 'NV 0.0685)
+        (make-state-rate 'NY 0.04)
+        (make-state-rate 'OH 0.055)
+        (make-state-rate 'OK 0.045)
+        (make-state-rate 'OR 0)
+        (make-state-rate 'PA 0.06)
+        (make-state-rate 'RI 0.07)
+        (make-state-rate 'SC 0.06)
+        (make-state-rate 'SD 0.04)
+        (make-state-rate 'TN 0.07)
+        (make-state-rate 'TX 0.0625)
+        (make-state-rate 'UT 0.047)
+        (make-state-rate 'VA 0)
+        (make-state-rate 'VT 0.06)
+        (make-state-rate 'WA 0.065)
+        (make-state-rate 'WI 0.05)
+        (make-state-rate 'WV 0.06)
+        (make-state-rate 'WY 0.04)))
+
+;; ====== Operations ======
+
+;; reckon : (listof item) symbol -> bill

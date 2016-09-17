@@ -1,0 +1,113 @@
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/aranarochel-cs221-spr-14/!svn/ver/64/hw3/L2
+END
+interpret-sig.sml
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/aranarochel-cs221-spr-14/!svn/ver/57/hw3/L2/interpret-sig.sml
+END
+optimize.sml
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/aranarochel-cs221-spr-14/!svn/ver/64/hw3/L2/optimize.sml
+END
+scoped-ast.sml
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/aranarochel-cs221-spr-14/!svn/ver/60/hw3/L2/scoped-ast.sml
+END
+sourcesL.cm
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/aranarochel-cs221-spr-14/!svn/ver/63/hw3/L2/sourcesL.cm
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/aranarochel-cs221-spr-14/!svn/ver/42/hw3/L2/README
+END
+eval-sig.sml
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/aranarochel-cs221-spr-14/!svn/ver/57/hw3/L2/eval-sig.sml
+END
+lex-sig.sml
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/aranarochel-cs221-spr-14/!svn/ver/42/hw3/L2/lex-sig.sml
+END
+scope.sml
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/aranarochel-cs221-spr-14/!svn/ver/60/hw3/L2/scope.sml
+END
+parse.sml
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/aranarochel-cs221-spr-14/!svn/ver/59/hw3/L2/parse.sml
+END
+interpret.sml
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/aranarochel-cs221-spr-14/!svn/ver/42/hw3/L2/interpret.sml
+END
+value.sml
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/aranarochel-cs221-spr-14/!svn/ver/43/hw3/L2/value.sml
+END
+optimize-sig.sml
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/aranarochel-cs221-spr-14/!svn/ver/64/hw3/L2/optimize-sig.sml
+END
+token.sml
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/aranarochel-cs221-spr-14/!svn/ver/58/hw3/L2/token.sml
+END
+eval.sml
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/aranarochel-cs221-spr-14/!svn/ver/61/hw3/L2/eval.sml
+END
+ast.sml
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/aranarochel-cs221-spr-14/!svn/ver/59/hw3/L2/ast.sml
+END
+lex.sml
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/aranarochel-cs221-spr-14/!svn/ver/58/hw3/L2/lex.sml
+END
+scope-sig.sml
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/aranarochel-cs221-spr-14/!svn/ver/42/hw3/L2/scope-sig.sml
+END
+parse-sig.sml
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/aranarochel-cs221-spr-14/!svn/ver/42/hw3/L2/parse-sig.sml
+END

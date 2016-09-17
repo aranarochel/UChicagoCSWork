@@ -1,0 +1,151 @@
+Project 3
+---------
+
+Step 1
+------
+chidb_table_exists - Nick
+chidb_get_root - Nick
+chidb_column_exists - Nick
+chidb_column_get_type - Nick
+chidb_column_names - Richard
+chidb_columns_total - Jaime
+print_schema_list - Jaime
+chidb_column_position - Emilee
+load_schema - Jaime
+chidb_open - Jaime
+schema struct - Jaime
+
+
+
+Step 2
+------
+chidb_stmt_select - Richard, Emilee
+chidb_stmt_select_star_expand - mostly Emilee, Richard
+chidb_get_sra_tables - Richard
+chidb_get_select_columns - Jaime
+chidb_count_select_columns - Jaime, Emilee -- likely useless
+
+Step 3
+------
+chidb_stmt_create - Jaime
+
+Step 4
+------
+chidb_stmt_insert - Nick
+
+Step 5
+------
+Emilee. Just Emilee all the way
+
+Other Functions
+---------------
+chidb_dbm_op_WriteReg - Richard
+rewrite of ops to do checks and reallocate regs - Richard
+extensive leak checking - Richard
+general cleaning and compilation - Richard
+chidb_make_op - Nick
+chidb_stmt_check - Richard
+chidb_stmt_seed - Richard
+chidb_stmt_insert_op - Richard
+chidb_get_tables - Richard
+chisql_statement_free - Richard
+free_reg - Richard -- this frees the strdup'd strings in the regs so it doesn't leak!
+
+
+
+***************************************************
+
+
+
+PROJECT 2
+---------
+
+STEP1
+----- 
+Integer - Emilee
+String - Richard
+Null - Nick
+
+STEP2
+-----
+Eq - Nick
+Ne - Nick
+Lt - Emilee
+Le - Emilee
+Gt - Jaime
+Ge - Jaime
+Halt - Richard
+
+STEP3
+-----
+OpenRead - Richard
+OpenWrite - Richard
+Close - Richard
+Rewind - Richard, Nick, Emilee
+Next - Nick, Emilee, Jaime, Richard
+Prev - Jaime
+Seek - Jaime, Richard
+SeekGt - Jaime, Richard
+SeekGe - Jaime, Richard
+SeekLt - Jaime, Richard
+SeekLe - Jaime, Richard
+
+STEP4
+-----
+ResultRow - Jaime
+Column - Jaime
+Key - Jaime
+
+STEP5
+-----
+MakeRecord - Jaime, Richard
+Insert - Jaime
+
+STEP6
+-----
+CreateTable - Richard
+
+STEP7
+-----
+IdxGt - Jaime
+IdxGe - Jaime
+IdxLt - Jaime
+IdxPKey - Jaime
+IdxInsert - Jaime
+CreateIndex - Richard
+
+CURSORS
+-------
+struct cursor_t - Emilee
+struct trail_t - Emilee, Nick
+
+cursor_print - Nick
+trail_new - Emilee, Nick
+trail_list_destroy - Emilee
+trail_copy - Emilee
+clear_trail_from - Emilee
+trail_remove_at - Emilee
+cursor_init - Emilee
+cursor_destroy - Emilee
+
+cursor_fwd - Nick, Emilee
+
+	cursorTable_fwd - Nick, Emilee
+	cursorTable_fwdDwn - Nick, Emilee
+	cursorTable_fwdUp - Nick, Emilee
+
+	cursorIndex_fwd - Nick, Emilee
+	cursorIndex_fwdDwn - Nick, Emilee
+	cursorIndex_fwdUp - Nick, Emilee
+
+cursor_rev - Nick, Emilee
+
+	cursorTable_rev - Nick
+	cursorTable_revDwn - Nick, Emilee
+	cursorTable_revUp - Nick, Emilee
+
+	cursorTable_rev - Nick
+	cursorTable_revDwn - Nick, Emilee
+	cursorTable_revUp - Nick, Emilee
+
+cursor_seek - Richard 

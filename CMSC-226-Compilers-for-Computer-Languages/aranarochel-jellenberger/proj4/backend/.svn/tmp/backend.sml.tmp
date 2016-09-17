@@ -1,0 +1,161 @@
+(* backend.sml
+ *
+ * CMSC22610 Winter 2015 Sample code.
+ *
+ * COPYRIGHT (c) 2015 John Reppy (http://cs.uchicago.edu/~jhr)
+ * All rights reserved.
+ *
+ * This module glues together the backend passes that constitute Project 4.
+ *)
+
+structure Backend : sig
+
+    type flags = {
+	printAST : bool,	(* if true, print the simplified AST *)
+	printSIR : bool,	(* if true, print the Simple IR to a file *)
+	printCode : bool	(* if true, print the bytecode to a file *)
+      }
+
+    val compile : flags -> string * AST.program -> unit
+
+  end = struct
+
+  	exception NotInTable
+
+  	val nullconTbl : int AtomTable = AtomTable.mkTable (50, NotInTable)
+  	val dataconTbl : (int * Type.ty) AtomTable = AtomTable.mkTable (50, NotInTable)
+
+
+
+    type flags = {
+	printAST : bool,	(* if true, print the simplified AST *)
+	printSIR : bool,	(* if true, print the Simple IR to a file *)
+	printCode : bool	(* if true, print the bytecode to a file *)
+      }
+
+    fun printIR (mkStrm, printFn, ext) = let
+	  fun pr (false, _, _, prog) = prog
+	    | pr (true, info, stem, prog) = let
+		val outS = TextIO.openOut(OS.Path.joinBaseExt{base=stem, ext=SOME ext})
+		val strm = mkStrm (outS, info)
+		in
+		  printFn (strm, prog) handle ex => (TextIO.closeOut outS; raise ex);
+		  TextIO.closeOut outS;
+		  prog
+		end
+	  in
+	    pr
+	  end
+
+    fun compile {printAST, printSIR, printCode} (stem, prog) = let
+val prog = raise Fail "Backend.compile" (** YOUR CODE HERE **)
+	(* then generate code *)
+	  val codeS = Emit.openCode (OS.Path.joinBaseExt{base=stem, ext=SOME "vmo"})
+	  in
+	    CodeGen.gen (codeS, prog);
+	  (* dump a textual representation of the code if necessary *)
+	    if printCode
+	      then let
+		val outS = TextIO.openOut(OS.Path.joinBaseExt{base=stem, ext=SOME "vm"})
+		in
+		  Emit.dump (outS, codeS);
+		  TextIO.closeOut outS
+		end
+	      else ();
+	  (* resolve offsets in the code and write it to the object file *)
+	    Emit.finish codeS
+	  end
+
+
+	fun uncurry exp = (case exp 
+		of 	AST.Exp(AST.LetExp (bind, AST.Exp(exp_rep,ty)), expTy) => (case bind
+			of AST.FunBind (var, params, expb) => 
+				let fun lp (v, ps, expb') = (case ps
+					of [] => expb'
+				 	 | p::ps' => AST.Exp(AST.LetExp(AST.FunBind(v,[p],lp(v,ps',expb)),lp(v,ps',expb)),ty)
+				 	 (*end case*)) 
+				in AST.Exp(AST.LetExp(AST.FunBind(var,[hd(params)],lp(var,tl(params),expb)),AST.Exp(exp_rep,ty)), expTy)
+				end
+			| _ => exp
+			(*end case*))
+		| _ => exp
+		(*end case*))
+
+	fun etaConvert exp = raise Fail "fix and uncomment etaConvert" (*
+		(case exp
+		(*| datacons *)
+		of AST.Exp(AST.ConExp(dcon), ty) => let 
+				val name = DataCon.nameOf(dcon) 		(*name of the dcon*)
+				val isNully = DataCon.isNullary(dcon) 	(*is nullary data constructor*)
+				val tyCon = DataCon.tycOf(dcon) 		(*data-type constructor this dcon belongs to*)
+				val typOf = DataCon.typeOf(dcon) 		(*polymorphic if owning data type is parameterized, funTy if !isNully*)
+			
+				val (dcTyvars, dcTyOpt, dcTy) = DataCon.sigOf(dcon)
+				val bindVar = Var.new(Atom.atom("mk"^name), ty)
+				val bind = if (isSome(dcTyOpt)) (*if owning type is parameterized*)
+						   then AST.FunBind(bindVar, dcTyvars, AST.Exp( (*???*), typOf)) (*want: what does this dcon do*)
+						   else AST.FunBind(bindVar, dcTyvars, AST.Exp(AST.IntExp(0), typOf)) (*NONE case? maybe?*)
+				val exp = AST.Exp( AST.(*???*), typOf) (*want: what do we apply this dcon to*)
+			in 
+				AST.Exp(AST.LetExp(bind, exp),ty)
+			end
+	   (*| Primitive functions - i think eta expansion into tuples happens later?*)
+	   	 | of AST.Exp(
+	   	 		AST.AppExp(
+	   	 			AST.Exp(AST.VarExp(operator), opTy),
+	   	 			exp2),
+	   	 		resultTy)
+	   	 	=> (case operator
+	   	 			of ignore => AST.Exp(exp2, Basis.unitTy)
+	   	 		(*end case*))
+		 | _ => exp 
+		 (*end case*))
+	*)
+	  
+
+	fun initialAST prog = (case prog
+		of AST.Program(exp) => AST.Program(etaConvert uncurry exp) (* w/currying for extra irony *)
+		(* end case *))
+
+(*Takes AST w/ function definitions and returns hash table(?) of free variable mapped to their functions*)
+	fun findFrees exp = (case exp
+		of AST.Exp(AST.LetExp(bind, exp'), ty) => (case bind
+			of AST.FunBind(var, params, bindExp) => (case params
+				of [] => raise Fail "todo"
+				 | p::ps => raise Fail "todo"
+				 (*end case*))
+			 | _ => raise Fail "todo"
+			 (*end case*))
+		 | _ => exp
+		 (*end case*))
+
+(*Takes AST with Data constructors and returns hash table of constructors mapped to a "description of their representation"*)
+	fun findDCs exp = (case exp
+		of AST.Exp(AST.ConExp(dcon), ty) => let
+				val name = DataCon.nameOf(dcon) 		(*name of the dcon*)
+				val isNully = DataCon.isNullary(dcon) 	(*is nullary data constructor*)
+				val tyCon = DataCon.tycOf(dcon) 		(*data-type constructor this dcon belongs to*)
+				val typOf = DataCon.typeOf(dcon) 		(*polymorphic if owning data type is parameterized, funTy if !isNully*)
+			
+			in
+				raise Fail "todo"
+			end
+		 | _ => exp
+		(*end case*))
+
+(*translate AST to simpleIR. functions, data cons, primitives, prim ops, pattern matching*)
+		fun astToIR prog = (case prog
+			of AST.Exp(exp, progTy) => let 
+				val freesDB = findFrees(prog)
+				val dcDB = findDCs(prog)
+			in 
+				(case exp 
+					of _ => raise Fail "todo"
+				(*end case*))
+			end
+		(*end case*))
+
+
+  end
+
+

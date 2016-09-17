@@ -1,0 +1,12 @@
+HW2 part 1 : implement lexical scanning, parsing, scoping and
+evaluating L programs. Examine the source code. Hints are sprinkled
+throughout.
+
+To compile the whole bundle by using the provided cm file (which is
+SML/NJ's equivalent of a Makefile), from within the sml REPL, type
+this:
+
+- CM.make "sourcesL.cm";
+
+It should already compile, although, as given, all the critical
+functions are stubbed out with exceptions.

@@ -1,0 +1,88 @@
+
+import java.math.BigInteger;
+import java.util.Arrays;
+
+public class KeyExchange {
+	public static final int OUTPUT_SIZE_BYTES = 128; // IMPLEMENT THIS
+	public static final int OUTPUT_SIZE_BITS = 8 * OUTPUT_SIZE_BYTES;
+
+	private BigInteger a;
+	
+	public KeyExchange(PRGen rand) {
+		// Prepares to do a key exchange. rand is a secure pseudorandom generator
+		//    that can be used by the implementation.
+		//
+		// Once the KeyExchange object is created, two operations have to be performed to complete
+		// the key exchange:
+		// 1.  Call prepareOutMessage on this object, and send the result to the other
+		//     participant.
+		// 2.  Receive the result of the other participant's prepareOutMessage, and pass it in
+		//     as the argument to a call on this object's processInMessage.  
+		// For a given KeyExchange object, prepareOutMessage and processInMessage
+		// could be called in either order, and KeyExchange should produce the same result regardless.
+		//
+		// The call to processInMessage should behave as follows:
+		//     If passed a null value, then throw a NullPointerException.
+		//     Otherwise, if passed a value that could not possibly have been generated
+		//        by prepareOutMessage, then return null.
+		//     Otherwise, return a "digest" value with the property described below.
+		//
+		// This code must provide the following security guarantee: If the two 
+		//    participants end up with the same non-null digest value, then this digest value
+		//    is not known to anyone else.   This must be true even if third parties
+		//    can observe and modify the messages sent between the participants.
+		// This code is NOT required to check whether the two participants end up with
+		//    the same digest value; the code calling this must verify that property.
+
+		// generate random value a
+		a = Proj2Util.generatePrime(rand,2048);	
+	}
+
+	public byte[] prepareOutMessage() {
+		// generate g^a mod p
+		BigInteger A = DHConstants.g.modPow(a,DHConstants.p);
+		byte[] outMessage = Proj2Util.bigIntegerToBytes(A,OUTPUT_SIZE_BYTES);
+		
+		return outMessage;
+	}
+
+	public byte[] processInMessage(byte[] inMessage) {
+		if (inMessage == null)    throw new NullPointerException();
+		if (inMessage.length != OUTPUT_SIZE_BYTES)		return null;
+		
+		BigInteger inInt = Proj2Util.bytesToBigInteger(inMessage);
+		//get secret shared value X
+		BigInteger xInt = inInt.modPow(a, DHConstants.p);
+		byte[] X = Proj2Util.bigIntegerToBytes(xInt,OUTPUT_SIZE_BYTES);
+		
+		// return digest (I'm assuming that's the key)
+		byte[] key = Proj2Util.hash(X);
+		return key;
+	}
+	
+	public static void main(String[] argv) {
+		byte[] keyA = new byte[32];
+		for(int i = 0; i < 32; i++)
+		    keyA[i] = (byte)(i*i);
+		
+		byte[] keyB = new byte[32];
+		for(int i = 0; i < 32; i++)
+		    keyB[i] = (byte)(i+i);
+		
+		PRGen prgA = new PRGen(keyA);
+		PRGen prgB = new PRGen(keyB);
+		
+		KeyExchange Alice = new KeyExchange(prgA);
+		KeyExchange Bob = new KeyExchange(prgB);
+		
+		byte[] outA = Alice.prepareOutMessage();
+		byte[] outB = Bob.prepareOutMessage();
+		
+		byte[] digestA = Alice.processInMessage(outB);
+		byte[] digestB = Bob.processInMessage(outA);
+		
+		// check if digests are equal
+		if (Arrays.equals(digestA,digestB))  System.out.println("true");
+		
+	}
+}

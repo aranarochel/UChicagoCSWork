@@ -1,0 +1,43 @@
+TotalScore: 40
+
+---
+take
+Score: 10
+   take 3 : 2 points : Pass
+   negative : 2 points : Pass
+   take 0 empty : 2 points : Pass
+   take 1 empty : 2 points : Pass
+   different errors : 2 points : Pass
+---
+---
+subsequences
+Score: 10
+   [1] : 2 points : Pass
+   [1,2,3,4] : 6 points : Pass
+   [] : 2 points : Pass
+---
+---
+additivePersistence
+Score: 5
+   0 : 1 points : Pass
+   384756 : 1 points : Pass
+   9999 : 1 points : Pass
+   9876 : 2 points : Pass
+---
+---
+digitalRoot
+Score: 5
+   0 : 1 points : Pass
+   384756 : 1 points : Pass
+   9999 : 1 points : Pass
+   9876 : 2 points : Pass
+---
+---
+digitsOfInt
+Score: 10
+   8642 : 3 points : Pass
+   012345 : 3 points : Pass
+   0 : 2 points : Pass
+   -1 : 2 points : Pass
+---
+

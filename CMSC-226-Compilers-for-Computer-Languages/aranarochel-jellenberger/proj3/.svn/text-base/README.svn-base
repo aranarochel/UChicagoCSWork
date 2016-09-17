@@ -1,0 +1,8 @@
+CMSC 22610
+Winter 2015
+
+This directory contains the seed code for Project 3.  You will need to complete the
+implementation of several functions in the typechecker/type-util.sml file and
+implement your type checker in the type-checker.sml file.  Feel free to add additional
+source files so that your code is modular and well organized.
+

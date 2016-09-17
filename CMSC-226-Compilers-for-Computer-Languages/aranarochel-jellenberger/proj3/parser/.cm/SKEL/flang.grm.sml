@@ -1,0 +1,2 @@
+Skeleton 5
+d3f2d"Atom"d"IntInf"aä¢FLangTokens"è0ae"FLangParseFn"i2aä¢Lex"gp1c"ANTLR_LEXER"f3ÿ8ä¢BasisNames"d"Error"h1bd4aä¢Tok"gp1ÿad"UserCode"h2ad"PT"gp1d"ParseTree"ad"BN"gp1ÿad"Err"jh2aÿ.gp1ÿ.aÿ8gp1ÿ8gp1e"AntlrErrHandler"ad"EBNF"jÿ#gp1e"AntlrEBNF"f0

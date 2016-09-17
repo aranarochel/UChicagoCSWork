@@ -1,0 +1,439 @@
+Elm.DrawHeap = Elm.DrawHeap || {};
+Elm.DrawHeap.make = function (_elm) {
+   "use strict";
+   _elm.DrawHeap = _elm.DrawHeap || {};
+   if (_elm.DrawHeap.values)
+   return _elm.DrawHeap.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   _P = _N.Ports.make(_elm),
+   $moduleName = "DrawHeap",
+   $Array = Elm.Array.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Color = Elm.Color.make(_elm),
+   $Graphics$Collage = Elm.Graphics.Collage.make(_elm),
+   $Graphics$Element = Elm.Graphics.Element.make(_elm),
+   $Graphics$Input = Elm.Graphics.Input.make(_elm),
+   $Graphics$Input$Field = Elm.Graphics.Input.Field.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $String = Elm.String.make(_elm),
+   $Text = Elm.Text.make(_elm),
+   $Window = Elm.Window.make(_elm);
+   var mkTreeElem = F2(function (i,
+   a) {
+      return function () {
+         var _v0 = {ctor: "_Tuple2"
+                   ,_0: A2($Array.get,2 * i + 1,a)
+                   ,_1: A2($Array.get,
+                   2 * i + 2,
+                   a)};
+         switch (_v0.ctor)
+         {case "_Tuple2":
+            switch (_v0._0.ctor)
+              {case "Just":
+                 switch (_v0._1.ctor)
+                   {case "Just":
+                      return A2($Graphics$Collage.collage,
+                        80,
+                        80)(_L.fromArray([$Graphics$Collage.filled($Color.lightYellow)($Graphics$Collage.circle(20))
+                                         ,$Graphics$Collage.toForm($Text.asText($List.head($Array.toList(a))))]));
+                      case "Nothing":
+                      return A2($Graphics$Collage.collage,
+                        80,
+                        80)(_L.fromArray([$Graphics$Collage.filled($Color.lightYellow)($Graphics$Collage.circle(20))
+                                         ,$Graphics$Collage.toForm($Text.asText($List.head($Array.toList(a))))]));}
+                   break;
+                 case "Nothing":
+                 switch (_v0._1.ctor)
+                   {case "Just":
+                      return A2($Graphics$Collage.collage,
+                        80,
+                        80)(_L.fromArray([$Graphics$Collage.move({ctor: "_Tuple2"
+                                                                 ,_0: 20
+                                                                 ,_1: -30})($Graphics$Collage.rotate($Basics.degrees(30))($Graphics$Collage.filled($Color.blue)(A2($Graphics$Collage.rect,
+                                         3,
+                                         40))))
+                                         ,$Graphics$Collage.filled($Color.lightYellow)($Graphics$Collage.circle(20))
+                                         ,$Graphics$Collage.toForm($Text.asText($List.head($Array.toList(a))))]));
+                      case "Nothing":
+                      return A2($Graphics$Collage.collage,
+                        80,
+                        80)(_L.fromArray([$Graphics$Collage.filled($Color.lightYellow)($Graphics$Collage.circle(20))
+                                         ,$Graphics$Collage.toForm($Text.asText($List.head($Array.toList(a))))]));}
+                   break;}
+              break;}
+         _U.badCase($moduleName,
+         "between lines 173 and 193");
+      }();
+   });
+   var mkListElem = function (i) {
+      return A2($Graphics$Collage.collage,
+      50,
+      50)(_L.fromArray([$Graphics$Collage.rotate($Basics.degrees(30))($Graphics$Collage.outlined($Graphics$Collage.dashed($Color.darkGreen))($Graphics$Collage.square(50)))
+                       ,$Graphics$Collage.toForm($Text.asText(i))]));
+   };
+   var drawList = function (a) {
+      return function () {
+         var elemList = A2($List.map,
+         mkListElem,
+         $Array.toList(a));
+         return A3($List.foldr,
+         $Graphics$Element.beside,
+         $Graphics$Element.empty,
+         elemList);
+      }();
+   };
+   var lgroup = F2(function (i,
+   ls) {
+      return function () {
+         switch (ls.ctor)
+         {case "[]":
+            return _L.fromArray([]);}
+         return A2($List._op["::"],
+         A2($List.take,i,ls),
+         A2(lgroup,
+         i * 2,
+         A2($List.drop,i,ls)));
+      }();
+   });
+   var drawTree = F2(function (a,
+   indices) {
+      return function () {
+         var dt = F2(function (ar,
+         id) {
+            return function () {
+               var _v7 = $Array.toList(ar);
+               switch (_v7.ctor)
+               {case "::":
+                  return A2($List._op["::"],
+                    A2(mkTreeElem,
+                    $List.head(indices),
+                    ar),
+                    A2(dt,
+                    $Array.fromList(_v7._1),
+                    $List.tail(id)));
+                  case "[]":
+                  return _L.fromArray([]);}
+               _U.badCase($moduleName,
+               "between lines 196 and 200");
+            }();
+         });
+         var elementPairs = A2(lgroup,
+         1,
+         A2(dt,a,indices));
+         var elemList = A2($List.map,
+         function (i) {
+            return A3($List.foldr,
+            $Graphics$Element.beside,
+            $Graphics$Element.empty,
+            i);
+         },
+         elementPairs);
+         var elems = A2($List.map,
+         function (e) {
+            return A2($Graphics$Collage.collage,
+            500,
+            50)(_L.fromArray([$Graphics$Collage.moveX(-30)($Graphics$Collage.toForm(e))]));
+         },
+         elemList);
+         return A2($Graphics$Element.flow,
+         $Graphics$Element.down,
+         elems);
+      }();
+   });
+   var stoi = function (s) {
+      return function () {
+         var _v10 = $String.toInt(s);
+         switch (_v10.ctor)
+         {case "Ok": return _v10._0;}
+         return 0;
+      }();
+   };
+   var lineStyle = function () {
+      var ls = $Graphics$Collage.defaultLine;
+      return _U.replace([["color"
+                         ,$Color.darkBlue]
+                        ,["width",5]],
+      ls);
+   }();
+   var strStyle = function ($) {
+      return $Text.centered($Text.height(25)($Text.fromString($)));
+   };
+   var hspace = A2($Graphics$Element.spacer,
+   30,
+   30);
+   var btnH = 45;
+   var btnW = 200;
+   var myButton = F2(function (evt,
+   s) {
+      return function () {
+         var mkBtn = function (c) {
+            return A3($Graphics$Collage.collage,
+            btnW,
+            btnH,
+            _L.fromArray([A2($Graphics$Collage.filled,
+                         c,
+                         A2($Graphics$Collage.rect,
+                         btnW,
+                         btnH))
+                         ,A2($Graphics$Collage.outlined,
+                         lineStyle,
+                         A2($Graphics$Collage.rect,
+                         btnW,
+                         btnH))
+                         ,$Graphics$Collage.toForm(strStyle(s))]));
+         };
+         return A4($Graphics$Input.customButton,
+         evt,
+         mkBtn($Color.lightPurple),
+         mkBtn($Color.lightGreen),
+         mkBtn($Color.green));
+      }();
+   });
+   var inputBox = $Signal.channel($Graphics$Input$Field.noContent);
+   var Delete = {ctor: "Delete"};
+   var buttonCh = $Signal.channel(Delete);
+   var Add = function (a) {
+      return {ctor: "Add",_0: a};
+   };
+   var view = F3(function (_v12,
+   con,
+   _v13) {
+      return function () {
+         switch (_v13.ctor)
+         {case "WrapHeap":
+            return function () {
+                 switch (_v12.ctor)
+                 {case "_Tuple2":
+                    return $Graphics$Element.color($Color.lightGrey)($Graphics$Element.above(A3($Graphics$Element.container,
+                      _v12._0 + 60,
+                      200,
+                      $Graphics$Element.middle)(A2(drawTree,
+                      _v13._0,
+                      $Array.toList(A2($Array.initialize,
+                      $Array.length(_v13._0),
+                      $Basics.identity)))))($Graphics$Element.above(A3($Graphics$Element.container,
+                      _v12._0,
+                      120,
+                      $Graphics$Element.middle)(drawList(_v13._0)))(A3($Graphics$Element.container,
+                      _v12._0,
+                      _v12._1,
+                      $Graphics$Element.midTop)($Graphics$Element.flow($Graphics$Element.down)(A2($List.intersperse,
+                      hspace,
+                      _L.fromArray([A4($Graphics$Input$Field.field,
+                                   $Graphics$Input$Field.defaultStyle,
+                                   $Signal.send(inputBox),
+                                   "insert an Int!",
+                                   con)
+                                   ,A2(myButton,
+                                   A2($Signal.send,
+                                   buttonCh,
+                                   Add(stoi(con.string))),
+                                   "Add")
+                                   ,A2(myButton,
+                                   A2($Signal.send,
+                                   buttonCh,
+                                   Delete),
+                                   "Delete")])))))));}
+                 _U.badCase($moduleName,
+                 "between lines 210 and 219");
+              }();}
+         _U.badCase($moduleName,
+         "between lines 210 and 219");
+      }();
+   });
+   var pop = function (a) {
+      return A3($Array.slice,
+      0,
+      $Array.length(a) - 1,
+      a);
+   };
+   var fromJust = F2(function (i,
+   mx) {
+      return function () {
+         switch (mx.ctor)
+         {case "Just": return mx._0;
+            case "Nothing": return i;}
+         _U.badCase($moduleName,
+         "between lines 25 and 27");
+      }();
+   });
+   var justGet = F2(function (i,
+   a) {
+      return A2(fromJust,
+      i,
+      A2($Array.get,i,a));
+   });
+   var swap = F3(function (i,j,a) {
+      return A2($Array.set,
+      j,
+      A2(justGet,i,a))(A2($Array.set,
+      i,
+      A2(justGet,j,a))(a));
+   });
+   var bubbleUp = F2(function (i,
+   a) {
+      return _U.eq(i,
+      0) ? a : function () {
+         var ch = A2(justGet,i,a);
+         var j = (i - 1) / 2 | 0;
+         var par = A2(justGet,j,a);
+         return _U.cmp(par,
+         ch) < 1 ? a : bubbleUp(j)(A2(swap,
+         i,
+         j)(a));
+      }();
+   });
+   var bubbleDown = F2(function (i,
+   a) {
+      return function () {
+         var n = $Array.length(a);
+         return _U.cmp(i,
+         n) > -1 ? a : function () {
+            var $ = {ctor: "_Tuple2"
+                    ,_0: 2 * i + 1
+                    ,_1: 2 * i + 2},
+            j = $._0,
+            k = $._1;
+            var i$ = _U.cmp(A2(justGet,j,a),
+            A2(justGet,i,a)) < 0 ? j : i;
+            var i$$ = _U.cmp(A2(justGet,
+            k,
+            a),
+            A2(justGet,i$,a)) < 0 ? k : i$;
+            return _U.eq(i,
+            i$$) ? a : bubbleDown(i$$)(A2(swap,
+            i,
+            i$$)(a));
+         }();
+      }();
+   });
+   var WrapHeap = function (a) {
+      return {ctor: "WrapHeap"
+             ,_0: a};
+   };
+   var insert = F2(function (x,
+   _v21) {
+      return function () {
+         switch (_v21.ctor)
+         {case "WrapHeap":
+            return function () {
+                 var a$ = A2($Array.push,
+                 x,
+                 _v21._0);
+                 var n = $Array.length(_v21._0);
+                 return WrapHeap(A2(bubbleUp,
+                 n,
+                 a$));
+              }();}
+         _U.badCase($moduleName,
+         "between lines 41 and 43");
+      }();
+   });
+   var deleteMin = function (_v24) {
+      return function () {
+         switch (_v24.ctor)
+         {case "WrapHeap":
+            return function () {
+                 var n = $Array.length(_v24._0);
+                 return _U.eq(n,
+                 0) ? $Maybe.Nothing : function () {
+                    var x = A2(justGet,
+                    n - 1,
+                    _v24._0);
+                    return $Maybe.Just(WrapHeap(bubbleDown(0)(A2($Array.set,
+                    0,
+                    x)(pop(_v24._0)))));
+                 }();
+              }();}
+         _U.badCase($moduleName,
+         "between lines 58 and 65");
+      }();
+   };
+   var empty = WrapHeap($Array.empty);
+   var initstate = insert(5)(insert(3)(A2(insert,
+   0,
+   empty)));
+   var maybeHtoH = F2(function (h,
+   ini) {
+      return function () {
+         switch (h.ctor)
+         {case "Just":
+            return function () {
+                 var _raw = h._0,
+                 $ = _raw.ctor === "WrapHeap" ? _raw : _U.badCase($moduleName,
+                 "on line 138, column 35 to 37"),
+                 a = $._0;
+                 return _U.eq($Array.length(a),
+                 2) ? ini : h._0;
+              }();
+            case "Nothing":
+            return initstate;}
+         _U.badCase($moduleName,
+         "between lines 136 and 144");
+      }();
+   });
+   var upstate = F2(function (event,
+   state) {
+      return function () {
+         switch (event.ctor)
+         {case "Add": return A2(insert,
+              event._0,
+              state);
+            case "Delete":
+            return A2(maybeHtoH,
+              deleteMin(state),
+              state);}
+         _U.badCase($moduleName,
+         "between lines 151 and 153");
+      }();
+   });
+   var main = A2($Signal._op["~"],
+   A2($Signal._op["~"],
+   A2($Signal._op["<~"],
+   view,
+   $Window.dimensions),
+   $Signal.subscribe(inputBox)),
+   A3($Signal.foldp,
+   upstate,
+   initstate,
+   $Signal.subscribe(buttonCh)));
+   _elm.DrawHeap.values = {_op: _op
+                          ,WrapHeap: WrapHeap
+                          ,fromJust: fromJust
+                          ,justGet: justGet
+                          ,pop: pop
+                          ,swap: swap
+                          ,insert: insert
+                          ,bubbleUp: bubbleUp
+                          ,deleteMin: deleteMin
+                          ,bubbleDown: bubbleDown
+                          ,empty: empty
+                          ,initstate: initstate
+                          ,Add: Add
+                          ,Delete: Delete
+                          ,buttonCh: buttonCh
+                          ,inputBox: inputBox
+                          ,btnW: btnW
+                          ,btnH: btnH
+                          ,myButton: myButton
+                          ,hspace: hspace
+                          ,strStyle: strStyle
+                          ,lineStyle: lineStyle
+                          ,stoi: stoi
+                          ,maybeHtoH: maybeHtoH
+                          ,lgroup: lgroup
+                          ,upstate: upstate
+                          ,mkListElem: mkListElem
+                          ,drawList: drawList
+                          ,mkTreeElem: mkTreeElem
+                          ,drawTree: drawTree
+                          ,view: view
+                          ,main: main};
+   return _elm.DrawHeap.values;
+};

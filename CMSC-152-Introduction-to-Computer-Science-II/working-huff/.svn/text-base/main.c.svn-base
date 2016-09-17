@@ -1,0 +1,52 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <strings.h>
+#include "huff.h"
+#include "huffll.h"
+#include "encode.h"
+#include "bits.h"
+
+void show_helper(huff *h, bits *history)
+{
+  switch (h->tag) {
+  case LEAF:
+    printf("%c ", h->h.leaf.c);
+    bits_show(history);
+    putchar('\n');
+    return;
+  case NODE:
+    /* traverse left subtree */
+    bits_putlast('0',history);
+    show_helper(h->h.node.lsub,history);
+    bits_remove_last(history);
+    /* traverse right subtree */
+    bits_putlast('1',history);
+    show_helper(h->h.node.rsub,history);
+    bits_remove_last(history);
+    return;
+  default:
+    fprintf(stderr,"main.show_helper: bad tag\n");
+    exit(1);
+  }
+
+}
+
+/* A function to display the Huffman codes in the tree. */
+void show(huff *h)
+{
+  bits *bs = bits_new(256);
+  show_helper(h,bs);
+}
+
+int main(int argc, char *argv[])
+{
+  char *txt;
+  if (argc!=2) {
+    fprintf(stderr,"please type exactly one whitespace-free string for encoding\n");
+    exit(1);
+  }
+  txt = argv[1];
+  huff *h = huff_from_msg(txt);
+  show(h);
+  return 0;
+}

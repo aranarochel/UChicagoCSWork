@@ -1,0 +1,87 @@
+Elm.FP = Elm.FP || {};
+Elm.FP.make = function (_elm) {
+   "use strict";
+   _elm.FP = _elm.FP || {};
+   if (_elm.FP.values)
+   return _elm.FP.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   _P = _N.Ports.make(_elm),
+   $moduleName = "FP",
+   $Basics = Elm.Basics.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Result = Elm.Result.make(_elm);
+   var take = F2(function (k,xs) {
+      return _U.cmp(k,
+      $List.length(xs)) > 0 ? $Result.Err("not enough elements") : _U.cmp(k,
+      0) < 0 ? $Result.Err("negative index") : $Result.Ok(A2($List.take,
+      k,
+      xs));
+   });
+   var subHelper = F3(function (h,
+   ls,
+   base) {
+      return A2($List._op["::"],
+      ls,
+      A2($List._op["::"],
+      A2($List._op["::"],h,ls),
+      base));
+   });
+   var subsequences = function (xs) {
+      return function () {
+         var sub = function (ls) {
+            return function () {
+               switch (ls.ctor)
+               {case "::":
+                  return A2($List._op["::"],
+                    _L.fromArray([ls._0]),
+                    A3($List.foldr,
+                    subHelper(ls._0),
+                    _L.fromArray([]),
+                    sub(ls._1)));
+                  case "[]":
+                  return _L.fromArray([]);}
+               _U.badCase($moduleName,
+               "between lines 40 and 43");
+            }();
+         };
+         return A2($List._op["::"],
+         _L.fromArray([]),
+         sub(xs));
+      }();
+   };
+   var doiHelper = function (n) {
+      return function () {
+         switch (n)
+         {case 0:
+            return _L.fromArray([]);}
+         return A2($List._op["::"],
+         A2($Basics._op["%"],n,10),
+         doiHelper(n / 10 | 0));
+      }();
+   };
+   var digitsOfInt = function (n) {
+      return _U.cmp(n,
+      0) < 0 ? _L.fromArray([]) : _U.eq(n,
+      0) ? _L.fromArray([0]) : $List.reverse(doiHelper(n));
+   };
+   var additivePersistence = function (n) {
+      return _U.cmp(n,
+      10) < 0 ? 0 : 1 + additivePersistence($List.sum(digitsOfInt(n)));
+   };
+   var digitalRoot = function (n) {
+      return _U.cmp(n,
+      10) < 0 ? n : digitalRoot($List.sum(digitsOfInt(n)));
+   };
+   _elm.FP.values = {_op: _op
+                    ,doiHelper: doiHelper
+                    ,digitsOfInt: digitsOfInt
+                    ,additivePersistence: additivePersistence
+                    ,digitalRoot: digitalRoot
+                    ,subHelper: subHelper
+                    ,subsequences: subsequences
+                    ,take: take};
+   return _elm.FP.values;
+};

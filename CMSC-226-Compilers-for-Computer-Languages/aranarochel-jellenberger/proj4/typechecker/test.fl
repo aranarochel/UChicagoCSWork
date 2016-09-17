@@ -1,0 +1,4 @@
+(* zero.flg *)
+
+data T with con NULL
+       with con NOTNULL of Integer

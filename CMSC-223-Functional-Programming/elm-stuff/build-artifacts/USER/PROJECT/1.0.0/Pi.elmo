@@ -1,0 +1,326 @@
+Elm.Pi = Elm.Pi || {};
+Elm.Pi.make = function (_elm) {
+   "use strict";
+   _elm.Pi = _elm.Pi || {};
+   if (_elm.Pi.values)
+   return _elm.Pi.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   _P = _N.Ports.make(_elm),
+   $moduleName = "Pi",
+   $Basics = Elm.Basics.make(_elm),
+   $Color = Elm.Color.make(_elm),
+   $Graphics$Collage = Elm.Graphics.Collage.make(_elm),
+   $Graphics$Element = Elm.Graphics.Element.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Random = Elm.Random.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $Text = Elm.Text.make(_elm),
+   $Time = Elm.Time.make(_elm),
+   $Window = Elm.Window.make(_elm);
+   var genPoint = function (s) {
+      return function () {
+         var $ = A2($Random.generate,
+         A2($Random.$float,0,1),
+         s),
+         p1 = $._0,
+         sd1 = $._1;
+         var $ = A2($Random.generate,
+         A2($Random.$float,0,1),
+         sd1),
+         p2 = $._0,
+         sd2 = $._1;
+         return {ctor: "_Tuple2"
+                ,_0: {_: {},x: p1,y: p2}
+                ,_1: sd2};
+      }();
+   };
+   var signalPointSeed = function () {
+      var updateS = F2(function (_v0,
+      st) {
+         return function () {
+            return function () {
+               var $ = st,p = $._0,s = $._1;
+               return genPoint(s);
+            }();
+         }();
+      });
+      var ticker = $Time.every($Time.millisecond);
+      var iniState = {ctor: "_Tuple2"
+                     ,_0: {_: {},x: 0,y: 0}
+                     ,_1: $Random.initialSeed(20)};
+      return A3($Signal.foldp,
+      updateS,
+      iniState,
+      ticker);
+   }();
+   var signalPoint = function () {
+      var getP = function (pointSeed) {
+         return function () {
+            var $ = pointSeed,
+            p = $._0,
+            s = $._1;
+            return p;
+         }();
+      };
+      return A2($Signal.map,
+      getP,
+      signalPointSeed);
+   }();
+   var piApprox = function (st) {
+      return function () {
+         var _ = st;
+         var hits = function () {
+            switch (_.ctor)
+            {case "_Tuple2":
+               switch (_._0.ctor)
+                 {case "_Tuple2":
+                    switch (_._1.ctor)
+                      {case "_Tuple2":
+                         return _._0._0;}
+                      break;}
+                 break;}
+            _U.badCase($moduleName,
+            "on line 54, column 31 to 33");
+         }();
+         var misses = function () {
+            switch (_.ctor)
+            {case "_Tuple2":
+               switch (_._0.ctor)
+                 {case "_Tuple2":
+                    switch (_._1.ctor)
+                      {case "_Tuple2":
+                         return _._1._0;}
+                      break;}
+                 break;}
+            _U.badCase($moduleName,
+            "on line 54, column 31 to 33");
+         }();
+         return $Basics.toFloat(hits) / $Basics.toFloat(hits + misses) * 4.0;
+      }();
+   };
+   var pointsToCirclesAlpha = F4(function (acol,
+   mul,
+   col,
+   points) {
+      return function () {
+         var pTof = function (p) {
+            return function () {
+               var $ = p,x = $.x,y = $.y;
+               return $Graphics$Collage.alpha(acol)(A2($Graphics$Collage.move,
+               {ctor: "_Tuple2"
+               ,_0: x * mul
+               ,_1: y * mul},
+               A2($Graphics$Collage.filled,
+               col,
+               A2($Graphics$Collage.ngon,
+               5,
+               5))));
+            }();
+         };
+         return A2($List.map,
+         pTof,
+         points);
+      }();
+   });
+   var view = F2(function (_v16,
+   st) {
+      return function () {
+         switch (_v16.ctor)
+         {case "_Tuple2":
+            return function () {
+                 var myPi = piApprox(st);
+                 var numPi = _L.fromArray([A2($Graphics$Collage.move,
+                 {ctor: "_Tuple2"
+                 ,_0: 200
+                 ,_1: -100},
+                 $Graphics$Collage.toForm($Text.asText(myPi)))]);
+                 var _ = st;
+                 var hitList = function () {
+                    switch (_.ctor)
+                    {case "_Tuple2":
+                       switch (_._0.ctor)
+                         {case "_Tuple2":
+                            switch (_._1.ctor)
+                              {case "_Tuple2":
+                                 return _._0._1;}
+                              break;}
+                         break;}
+                    _U.badCase($moduleName,
+                    "on line 64, column 44 to 46");
+                 }();
+                 var hits = function () {
+                    switch (_.ctor)
+                    {case "_Tuple2":
+                       switch (_._0.ctor)
+                         {case "_Tuple2":
+                            switch (_._1.ctor)
+                              {case "_Tuple2":
+                                 return _._0._0;}
+                              break;}
+                         break;}
+                    _U.badCase($moduleName,
+                    "on line 64, column 44 to 46");
+                 }();
+                 var missList = function () {
+                    switch (_.ctor)
+                    {case "_Tuple2":
+                       switch (_._0.ctor)
+                         {case "_Tuple2":
+                            switch (_._1.ctor)
+                              {case "_Tuple2":
+                                 return _._1._1;}
+                              break;}
+                         break;}
+                    _U.badCase($moduleName,
+                    "on line 64, column 44 to 46");
+                 }();
+                 var misses = function () {
+                    switch (_.ctor)
+                    {case "_Tuple2":
+                       switch (_._0.ctor)
+                         {case "_Tuple2":
+                            switch (_._1.ctor)
+                              {case "_Tuple2":
+                                 return _._1._0;}
+                              break;}
+                         break;}
+                    _U.badCase($moduleName,
+                    "on line 64, column 44 to 46");
+                 }();
+                 var hitCircles = A4(pointsToCirclesAlpha,
+                 1.0,
+                 400,
+                 A3($Color.rgb,200,150,50),
+                 hitList);
+                 var missCircles = A4(pointsToCirclesAlpha,
+                 1.0,
+                 400,
+                 A3($Color.rgb,20,90,100),
+                 missList);
+                 var hitCirclesShadow = A4(pointsToCirclesAlpha,
+                 0.15,
+                 340,
+                 A3($Color.rgb,20,200,20),
+                 hitList);
+                 var missCirclesShadow = A4(pointsToCirclesAlpha,
+                 0.15,
+                 340,
+                 A3($Color.rgb,50,100,150),
+                 missList);
+                 var myImage = A3($List.foldr,
+                 $List.append,
+                 _L.fromArray([]),
+                 A2($List._op["::"],
+                 hitCircles,
+                 A2($List._op["::"],
+                 missCircles,
+                 A2($List._op["::"],
+                 hitCirclesShadow,
+                 A2($List._op["::"],
+                 missCirclesShadow,
+                 A2($List._op["::"],
+                 numPi,
+                 _L.fromArray([])))))));
+                 return A3($Graphics$Collage.collage,
+                 _v16._0,
+                 _v16._1,
+                 myImage);
+              }();}
+         _U.badCase($moduleName,
+         "between lines 63 and 73");
+      }();
+   });
+   var isInCircle = function (pt) {
+      return _U.cmp(Math.pow(pt.x,
+      2) + Math.pow(pt.y,2),
+      1) < 0 || _U.eq(Math.pow(pt.x,
+      2) + Math.pow(pt.y,2),
+      1);
+   };
+   var addPoint = function (_v48) {
+      return function () {
+         switch (_v48.ctor)
+         {case "_Tuple2":
+            return function () {
+                 var _v52 = {ctor: "_Tuple2"
+                            ,_0: isInCircle(_v48._0)
+                            ,_1: _v48._1};
+                 switch (_v52.ctor)
+                 {case "_Tuple2":
+                    switch (_v52._0)
+                      {case false:
+                         switch (_v52._1.ctor)
+                           {case "_Tuple2":
+                              switch (_v52._1._1.ctor)
+                                {case "_Tuple2":
+                                   return {ctor: "_Tuple2"
+                                          ,_0: _v52._1._0
+                                          ,_1: {ctor: "_Tuple2"
+                                               ,_0: _v52._1._1._0 + 1
+                                               ,_1: A2($List._op["::"],
+                                               _v48._0,
+                                               _v52._1._1._1)}};}
+                                break;}
+                           break;
+                         case true: switch (_v52._1.ctor)
+                           {case "_Tuple2":
+                              switch (_v52._1._0.ctor)
+                                {case "_Tuple2":
+                                   return {ctor: "_Tuple2"
+                                          ,_0: {ctor: "_Tuple2"
+                                               ,_0: _v52._1._0._0 + 1
+                                               ,_1: A2($List._op["::"],
+                                               _v48._0,
+                                               _v52._1._0._1)}
+                                          ,_1: _v52._1._1};}
+                                break;}
+                           break;}
+                      break;}
+                 _U.badCase($moduleName,
+                 "between lines 32 and 34");
+              }();}
+         _U.badCase($moduleName,
+         "between lines 32 and 34");
+      }();
+   };
+   var upstate = F2(function (pt,
+   st) {
+      return addPoint({ctor: "_Tuple2"
+                      ,_0: pt
+                      ,_1: st});
+   });
+   var initState = {ctor: "_Tuple2"
+                   ,_0: {ctor: "_Tuple2"
+                        ,_0: 0
+                        ,_1: _L.fromArray([])}
+                   ,_1: {ctor: "_Tuple2"
+                        ,_0: 0
+                        ,_1: _L.fromArray([])}};
+   var main = A3($Signal.map2,
+   view,
+   $Window.dimensions,
+   A3($Signal.foldp,
+   upstate,
+   initState,
+   signalPoint));
+   var Point = F2(function (a,b) {
+      return {_: {},x: a,y: b};
+   });
+   _elm.Pi.values = {_op: _op
+                    ,Point: Point
+                    ,initState: initState
+                    ,isInCircle: isInCircle
+                    ,addPoint: addPoint
+                    ,upstate: upstate
+                    ,pointsToCirclesAlpha: pointsToCirclesAlpha
+                    ,piApprox: piApprox
+                    ,view: view
+                    ,genPoint: genPoint
+                    ,signalPointSeed: signalPointSeed
+                    ,signalPoint: signalPoint
+                    ,main: main};
+   return _elm.Pi.values;
+};

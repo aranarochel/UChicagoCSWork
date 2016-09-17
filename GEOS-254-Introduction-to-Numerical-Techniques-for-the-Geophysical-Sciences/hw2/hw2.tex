@@ -1,0 +1,58 @@
+%Do not change 
+\documentclass[12pt, oneside]{article}
+\usepackage{amssymb,amsmath}
+\usepackage[margin=1in]{geometry}
+\usepackage{textpos}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+
+% You may add the packages you need here
+
+
+
+\begin{document}
+%Do not modify
+\begin{textblock*}{4cm}(-1.7cm,-2.3cm)
+\noindent {\scriptsize GEOS 254 Winter 2016} 
+\end{textblock*}
+
+%Do not modify other than putting your name where stated
+\begin{textblock*}{8cm}(12.5cm,-2.3cm)
+\noindent {Name: Jaime Arana-Rochel} 
+\end{textblock*}
+
+
+\vspace{1cm}
+
+\makeatletter
+\setlength{\@fptop}{0pt}
+\makeatother
+
+%Do not modify other than typing the homework number after #
+\begin{center}
+\textbf{\Large Homework \#2}
+\end{center}
+
+
+%Rest should contain your solution for the homework. Feel free to improvise in ways that you believe make grading easier.
+\subsection*{1)}
+The root as found by the three methods is, $x = 0.772883$. In terms of the number of for loop iterations, the bisection method took 26 steps, Newton's method took 10 steps, and the secant method took 14 steps. Newton's method converged faster to the solution than the other two methods so it was most efficient. However Newton's method totally depends on being able to define the derivative as its own function, so in general cases the secant method will be most efficient at finding roots, especially if the function is difficult to derivate.\\\\
+My code ran into a non-convergence issue for the bisection method test the first time I ran it. I had chosen my $nmax$ value to be less than the number of steps required to find the root for this particular function. As a result the function kept terminating without converging until I raised the value of $nmax$.\\
+
+\subsection*{2)}
+In order to derive Wien's Law and find the wavelength at which the Planck Function is at its maximum value, I used the secant method to find the root of the derivative of the Planck Function. I used this approach because the maximum value of the Planck Function coincides exactly when the slope of the function is zero; when the derivative of the function is zero.\\\\
+The derivative of the Planck Function is defined as follows,
+\[B'_{\lambda}(T) = \frac{hc}{\lambda k T}\frac{e^{hc/\lambda k T }}{e^{hc/\lambda k T } - 1}\]
+Because there are two variables in this equation ($\lambda, T$), we can simplify the equation by setting $x=\frac{hc}{\lambda k T}$. The simplified form of the derivative then becomes,
+\[B'_{\lambda}(T) = x\frac{e^{x}}{e^{x}-1}\]
+From the secant method the root to this function is,
+\[x = 4.965114\]
+Substituting this value back in to equation for x,
+\[4.965114 = \frac{hc}{\lambda_{max} k T}\,\,\,=>\,\, \lambda_{max} = \frac{.289765\,\,cm\cdot K}{T} \]
+
+
+
+
+
+\end{document}

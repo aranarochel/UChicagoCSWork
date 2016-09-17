@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/aranarochel-jellenberger/!svn/ver/51/proj4/codegen
+END
+instructions.sml
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/aranarochel-jellenberger/!svn/ver/50/proj4/codegen/instructions.sml
+END
+sources.cm
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/aranarochel-jellenberger/!svn/ver/50/proj4/codegen/sources.cm
+END
+runtime-api.sml
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/aranarochel-jellenberger/!svn/ver/51/proj4/codegen/runtime-api.sml
+END
+code-rep.sml
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/aranarochel-jellenberger/!svn/ver/50/proj4/codegen/code-rep.sml
+END
+emit.sml
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/aranarochel-jellenberger/!svn/ver/51/proj4/codegen/emit.sml
+END
+labels.sml
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/aranarochel-jellenberger/!svn/ver/50/proj4/codegen/labels.sml
+END

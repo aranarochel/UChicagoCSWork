@@ -1,0 +1,95 @@
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/aranarochel-cs221-spr-14/!svn/ver/41/hw2/L
+END
+scoped-ast.sml
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/aranarochel-cs221-spr-14/!svn/ver/24/hw2/L/scoped-ast.sml
+END
+sourcesL.cm
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/aranarochel-cs221-spr-14/!svn/ver/24/hw2/L/sourcesL.cm
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/aranarochel-cs221-spr-14/!svn/ver/24/hw2/L/README
+END
+eval-sig.sml
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/aranarochel-cs221-spr-14/!svn/ver/24/hw2/L/eval-sig.sml
+END
+lex-sig.sml
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/aranarochel-cs221-spr-14/!svn/ver/28/hw2/L/lex-sig.sml
+END
+scope.sml
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/aranarochel-cs221-spr-14/!svn/ver/40/hw2/L/scope.sml
+END
+parse.sml
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/aranarochel-cs221-spr-14/!svn/ver/33/hw2/L/parse.sml
+END
+interpret.sml
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/aranarochel-cs221-spr-14/!svn/ver/24/hw2/L/interpret.sml
+END
+token.sml
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/aranarochel-cs221-spr-14/!svn/ver/24/hw2/L/token.sml
+END
+eval.sml
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/aranarochel-cs221-spr-14/!svn/ver/41/hw2/L/eval.sml
+END
+ast.sml
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/aranarochel-cs221-spr-14/!svn/ver/24/hw2/L/ast.sml
+END
+lex.sml
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/aranarochel-cs221-spr-14/!svn/ver/29/hw2/L/lex.sml
+END
+scope-sig.sml
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/aranarochel-cs221-spr-14/!svn/ver/24/hw2/L/scope-sig.sml
+END
+parse-sig.sml
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/aranarochel-cs221-spr-14/!svn/ver/24/hw2/L/parse-sig.sml
+END
+interpret-sig.sml
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/aranarochel-cs221-spr-14/!svn/ver/24/hw2/L/interpret-sig.sml
+END

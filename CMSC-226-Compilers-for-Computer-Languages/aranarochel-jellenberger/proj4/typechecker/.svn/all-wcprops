@@ -1,0 +1,77 @@
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/aranarochel-jellenberger/!svn/ver/50/proj4/typechecker
+END
+ast.sml
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/aranarochel-jellenberger/!svn/ver/50/proj4/typechecker/ast.sml
+END
+sources.cm
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/aranarochel-jellenberger/!svn/ver/50/proj4/typechecker/sources.cm
+END
+var.sml
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/aranarochel-jellenberger/!svn/ver/50/proj4/typechecker/var.sml
+END
+tycon.sml
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/aranarochel-jellenberger/!svn/ver/50/proj4/typechecker/tycon.sml
+END
+type-util.sml
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/aranarochel-jellenberger/!svn/ver/50/proj4/typechecker/type-util.sml
+END
+basis.sml
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/aranarochel-jellenberger/!svn/ver/50/proj4/typechecker/basis.sml
+END
+print-ast.sml
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/aranarochel-jellenberger/!svn/ver/50/proj4/typechecker/print-ast.sml
+END
+type.sml
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/aranarochel-jellenberger/!svn/ver/50/proj4/typechecker/type.sml
+END
+type-checker.sml
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/aranarochel-jellenberger/!svn/ver/50/proj4/typechecker/type-checker.sml
+END
+context.sml
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/aranarochel-jellenberger/!svn/ver/50/proj4/typechecker/context.sml
+END
+tyvar.sml
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/aranarochel-jellenberger/!svn/ver/50/proj4/typechecker/tyvar.sml
+END
+data-con.sml
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/aranarochel-jellenberger/!svn/ver/50/proj4/typechecker/data-con.sml
+END

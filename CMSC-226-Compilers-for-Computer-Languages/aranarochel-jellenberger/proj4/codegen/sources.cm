@@ -1,0 +1,31 @@
+(* codegen.cm
+ *
+ * CMSC22610 Winter 2015 Sample code.
+ *
+ * COPYRIGHT (c) 2015 John Reppy (http://www.cs.uchicago.edu/~jhr)
+ * All rights reserved.
+ *
+ * This library provides support for generating VM bytecode
+ *)
+
+Library
+
+  signature EMIT
+  structure Emit
+  signature INSTRUCTIONS
+  structure Instructions
+  signature LABELS
+  structure Labels
+  structure RuntimeAPI
+
+is
+
+  $/basis.cm
+  $/smlnj-lib.cm
+
+  code-rep.sml
+  emit.sml
+  instructions.sml
+  labels.sml
+  runtime-api.sml
+

@@ -1,0 +1,40 @@
+(* sources.cm
+ *
+ * CMSC22610 Winter 2015
+ *
+ * COPYRIGHT (c) 2015 John Reppy (http://www.cs.uchicago.edu/~jhr)
+ * All rights reserved.
+ *
+ * CM file for the parser.
+ *)
+
+Library
+
+  structure AST
+  structure Basis
+  structure DataCon
+  structure PrintAST
+  structure Type
+  structure TypeChecker
+  structure TyCon
+  structure TyVar
+  structure Var
+
+is
+  $/basis.cm
+  $/smlnj-lib.cm
+  $/ml-lpt-lib.cm
+
+  ../util/sources.cm
+  ../parser/sources.cm
+
+  ast.sml
+  basis.sml
+  data-con.sml
+  print-ast.sml
+  type.sml
+  type-checker.sml
+  type-util.sml
+  tyvar.sml
+  tycon.sml
+  var.sml

@@ -1,0 +1,28 @@
+/* Project 6 Rubric */
+/*CMSC 23700, Fall 2015 */
+
+/* === Correctness === */
+/* Basic Renderer with directional lighting            10/10  */ 
+/* Morphing                                            15/20 
+
+Morphing is very sudden. You need to smooth it by using a time delta:
+    double now = glfwGetTime();
+    float dt = float(now - this->_lastFrameTime);
+    this->_lastFrameTime = now;
+
+This will smooth out the morphing between frames. 
+
+ */ 
+/* View Frustum Culling                                35/35  */
+/* Fog                                                 20/20  */ 
+/* Embellishments                                     100/100 
+
+Great work Jack and Jaime!! I love the vegetation and warp-speed with the colors! So much fun! 
+
+*/ 
+/* Project Demo                                        100/100 */ 
+/* Documentation                                       15/15  */ 
+
+/* _TOTAL-SCORE_    295/300 */
+
+/* graded by Lamont */

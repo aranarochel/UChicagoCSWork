@@ -1,0 +1,102 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <strings.h>
+#include <ctype.h>
+#include "huff.h"
+#include "bits.h"
+
+/* helper for show (see below) */
+void show_helper(huff *h, bits *history)
+{
+  switch (h->tag) {
+  case LEAF:
+    printf("%c", h->h.leaf.c);
+    bits_show(history);
+    putchar('\n');
+    return;
+  case NODE:
+    /* traverse left subtree */
+    bits_putlast('0',history);
+    show_helper(h->h.node.lsub,history);
+    bits_remove_last(history);
+    /* traverse right subtree */
+    bits_putlast('1',history);
+    show_helper(h->h.node.rsub,history);
+    bits_remove_last(history);
+    return;
+  default:
+    fprintf(stderr,"main.show_helper: bad tag\n");
+    exit(1);
+  }
+}
+
+void show(huff *h)
+{
+  bits *bs = bits_new(1024);
+  /* This allocation allows the program to handle a Huffman tree with 1024 level\
+     s. */
+  /* That should be *plenty*. */
+  show_helper(h,bs);
+}
+
+char** serialize_helper(huff *h, bits *history, char** codes)
+{
+  switch (h->tag) {
+  case LEAF:
+    codes[(int)h->h.leaf.c] = strdup(history->bits);
+    break;
+  case NODE:
+    /* traverse left subtree */
+    bits_putlast('0',history);
+    serialize_helper(h->h.node.lsub,history,codes);
+    bits_remove_last(history);
+    /* traverse right subtree */
+    bits_putlast('1',history);
+    serialize_helper(h->h.node.rsub,history,codes);
+    bits_remove_last(history);
+    break;
+  default:
+    fprintf(stderr,"main.show_helper: bad tag\n");
+    exit(1);
+  }
+  return codes;
+}
+
+char** huff_serialize(huff *h)
+{
+  int k;
+  char **codes = malloc(128*sizeof(char*));
+  for(k = 0; k < 128; k++) {
+    char *bit = malloc(sizeof(char));
+    codes[k] = bit;
+  }
+
+  int i;
+  for(i = 0; i < 128; i++) {
+    codes[i] = NULL;
+  }
+  bits *bs = bits_new(1024);
+  return serialize_helper(h,bs,codes);
+}
+
+void word_to_bitstring(char *s, char** codes)
+{
+  int i;
+  for(i = 0; i < strlen(s); i++) {
+    printf("%s",codes[(int)s[i]]);
+  }
+}
+
+int main(int argc, char *argv[])
+{
+  char *word = "AAAABBC";
+  
+  huff *h = word_to_huff(word);
+  show(h);
+  putchar('\n');
+  char** codes = huff_serialize(h);
+  printf("%s %s %s\n",codes[65],codes[66],codes[67]);
+  putchar('\n');
+  word_to_bitstring(word,codes);
+  return 0;
+}

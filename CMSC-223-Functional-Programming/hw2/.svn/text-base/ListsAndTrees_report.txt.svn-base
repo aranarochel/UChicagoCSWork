@@ -1,0 +1,70 @@
+TotalScore: 74/110
+
+Running time: 8/14
+   Suffixes: 3/3
+   Mem: 4/4
+   FullTree: 0/3 (use let statement to make only one recursive call, instead of 2 identical ones)
+   BalancedTree: 1/4 (use create2, defined to make only one recursive call, to achieve log n time)
+
+---
+almostCompleteTrees
+Score: 0
+   almostCompleteTrees4 : 2.5 points : Fail
+   almostCompleteTrees3 : 2.5 points : Fail
+   almostCompleteTrees2 : 2.5 points : Fail
+   almostCompleteTrees1 : 2.5 points : Fail
+---
+---
+completeTrees
+Score: 0
+   completeTrees6 : 4 points : Fail
+   completeTrees5 : 4 points : Fail
+   completeTrees4 : 4 points : Fail
+   completeTrees3 : 4 points : Fail
+   completeTrees2 : 4 points : Fail
+---
+---
+balancedTrees
+Score: 20
+   H5 : 4 points : Pass
+   H4 : 4 points : Pass
+   H3 : 4 points : Pass
+   H1 : 4 points : Pass
+   Empty : 4 points : Pass
+---
+---
+balancedTree
+Score: 16
+   H5 : 4 points : Pass
+   H4 : 4 points : Pass
+   H1 : 4 points : Pass
+   Empty : 4 points : Pass
+---
+---
+fullTree
+Score: 7
+   H4 : 2 points : Pass
+   H3 : 2 points : Pass
+   Single : 2 points : Pass
+   Empty : 1 points : Pass
+---
+---
+mem
+Score: 16
+   Absent : 2 points : Pass
+   Absent : 2 points : Pass
+   Present : 2 points : Pass
+   Present : 2 points : Pass
+   Present : 2 points : Pass
+   Present : 2 points : Pass
+   Present : 2 points : Pass
+   Empty : 2 points : Pass
+---
+---
+suffixes
+Score: 7
+   [4,3,2,1] : 3 points : Pass
+   [1,2,3,4] : 3 points : Pass
+   [] : 1 points : Pass
+---
+

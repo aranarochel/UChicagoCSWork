@@ -1,0 +1,166 @@
+(* flang.grm
+ *
+ * CMSC22610 Sample Code (Winter 2015)
+ *
+ * COPYRIGHT (c) 2015 John Reppy (http://cs.uchicago.edu/~jhr)
+ * All rights reserved.
+ *
+ * ml-antlr specification for FLang.
+ *)
+
+%name FLang;
+
+%defs (
+  structure PT = ParseTree
+  structure BN = BasisNames
+
+  fun markProgram (span,prog)   = PT.MarkProgram{span=span, tree=prog}
+  fun markDefinition (span,def) = PT.MarkDef{span=span, tree=def}
+  fun markTyp (span,typ)        = PT.MarkTyp{span=span, tree=typ}
+  fun markCon (span,con)        = PT.MarkCon{span=span, tree=con}
+  fun markBind (span,bind)      = PT.MarkBind{span=span, tree=bind}
+  fun markParam (span,param)    = PT.MarkParam{span=span, tree=param}
+  fun markExp (span,exp)        = PT.MarkExp{span=span, tree=exp}
+  fun markScope (span,scope)    = PT.MarkScope{span=span, tree=scope}
+  fun markCaseMatch (span,cm)   = PT.MarkCaseMatch{span=span, tree=cm}
+  fun markPat (span,pat)        = PT.MarkPat{span=span, tree=pat}
+);
+
+%tokens
+    : KW_case		("case")
+    | KW_con		("con")
+    | KW_data		("data")
+    | KW_else		("else")
+    | KW_end		("end")
+    | KW_fun		("fun")
+    | KW_if		("if")
+    | KW_let		("let")
+    | KW_of		("of")
+    | KW_then		("then")
+    | KW_type		("type")
+    | KW_with		("with")
+    | LP		("(")
+    | RP		(")")
+    | LB		("[")
+    | RB		("]")
+    | LCB		("{")
+    | RCB		("}")
+    | EQ		("=")
+    | EQEQ		("==")
+    | LTEQ		("<=")
+    | LT		("<")
+    | COLON		(":")
+    | DCOLON		("::")
+    | AT		("@")
+    | PLUS		("+")
+    | MINUS		("-")
+    | TIMES		("*")
+    | DIV		("/")
+    | MOD		("%")
+    | COMMA		(",")
+    | SEMI		(";")
+    | ARROW		("->")
+    | DARROW		("=>")
+    | WILD		("_")
+    | UID of Atom.atom
+    | LID of Atom.atom
+    | NUMBER of IntInf.int
+    | STRING of string
+    ;
+
+
+%start Program;
+
+Program
+	: (Definition ";")* Exp
+		=> (markProgram(FULL_SPAN,PT.Program(SR, Exp)))
+	;
+
+Definition
+    : "type" UID (TypeParams)? "=" Type => (markDefinition(FULL_SPAN,PT.TypeDef(UID,valOf(SR),Type)))
+    | "data" UID (TypeParams)? "with" (ConDef)+ => (markDefinition(FULL_SPAN,PT.DataDef(UID,valOf(SR1),SR2)))
+    | ValBind => (markDefinition(FULL_SPAN,PT.ValDef ValBind))
+    ;
+
+ConDef
+    : "con" UID ("of" Type)? => (markCon(FULL_SPAN,PT.Con(UID,SR)))
+    ;
+
+TypeParams
+    : "[" LID ("," LID)* "]" => (LID::SR)
+    ;
+
+
+Type
+    : TypeA "->" Type => (markTyp(FULL_SPAN,PT.FunTyp(TypeA,Type)))
+   (* | TypeA ("*" Type)+ => (markTyp(FULL_SPAN,PT.TupleTyp(TypeA::SR)))    *) 
+    ;
+
+
+TypeA
+    : UID => (markTyp(FULL_SPAN,PT.VarTyp UID))
+    | "(" Type ")" => (Type)
+    | TypeParams Type => (markTyp(FULL_SPAN,PT.PolyTyp(TypeParams,Type)))
+  (*  | UID (TypeArgs)? => (markTyp(FULL_SPAN,PT.ConTyp(UID,valOf(SR))))    *)
+    ;
+
+
+ValBind
+     (*: Exp => (markBind(FULL_SPAN,PT.ExpBind Exp)) *)
+    : "fun" LID (FunParam)+ "->" Type "=" Exp => (markBind(FULL_SPAN,PT.FunBind(LID,SR,Type,Exp)))
+    | "let" SimplePat (":" Type)? "=" Exp => (markBind(FULL_SPAN,PT.ValBind(SimplePat,SR,Exp)))
+    ;
+
+FunParam
+    : TypeParams => (markParam(FULL_SPAN,PT.TyParam(TypeParams)))
+    | "(" LID ":" Type ")" => (markParam(FULL_SPAN,PT.ValParam(LID,Type)))
+    ;
+
+Exp
+    : ApplyExp
+    ;
+
+ApplyExp
+   (* : ApplyExp ApplyExpA => (PT.AppExp(ApplyExp,ApplyExpA)) *)
+    : ApplyExpA
+    ;
+
+ApplyExpA
+    : AtomicExp
+    | AtomicA
+    ;
+
+(* AtomicExp Noneterminal from spec is split between AtomicExp and AtomicA *)
+AtomicExp
+    : "case" Exp "of" (MatchCase)+ "end" => (markExp(FULL_SPAN,PT.CaseExp(Exp,SR)))
+    | "{" Scope "}" => (markExp(FULL_SPAN,PT.LetExp(Scope))) 
+    | "(" Exp ("," Exp)* ")" => (markExp(FULL_SPAN,PT.TupleExp(Exp::SR)))
+    ;
+
+AtomicA
+    : NUMBER => (PT.IntExp NUMBER)
+    | STRING => (PT.StrExp STRING)
+    | LID    => (PT.VarExp LID)
+    | UID    => (PT.ConExp UID)
+    ;
+
+MatchCase
+    : "{" Pat "=>" Scope "}" => (markCaseMatch(FULL_SPAN,PT.CaseMatch(Pat,Scope)))
+    ;
+
+
+Scope
+    : (ValBind ";")* Exp => (markScope(FULL_SPAN,PT.Scope(SR,Exp)))
+    ;
+
+
+Pat
+    : SimplePat
+    | UID (SimplePat)? => (markPat(FULL_SPAN,PT.ConPat(UID,SR)))
+    | "(" SimplePat ("," SimplePat)* ")" => (markPat(FULL_SPAN,PT.TuplePat(SimplePat::SR)))
+    ;
+
+SimplePat
+    : LID => (markPat(FULL_SPAN,PT.VarPat(LID)))
+    | "_" => (markPat(FULL_SPAN,PT.WildPat))
+    ;

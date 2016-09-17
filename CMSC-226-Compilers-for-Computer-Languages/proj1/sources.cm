@@ -1,0 +1,12 @@
+Library
+
+  structure FLangTokens
+  structure FLangLex
+
+is
+
+  $/basis.cm
+  $/smlnj-lib.cm
+  flangtokens.sml
+  flang-lexer.sml
+

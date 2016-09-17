@@ -1,0 +1,124 @@
+/* Project 3 Rubric */
+/*CMSC 23700, Fall 2015 */
+
+/* === Correctness === */
+/* Project 2 completion/fixes (if applicable)                           6/15 
+
+1st - I'm not sure why you have "Cube" class from the lab because it's not useful in this case. 
+
+2nd -You are not reusing the meshes and textures that have already been created. 
+
+
+  for (it = scene.beginObjs(); it != scene.endObjs(); it++) {
+    // get the scene object
+    SceneObj obj = *it;
+
+    // create the drawable cube
+    Cube *c = new Cube();
+
+    // create new mesh to fill data
+    Mesh *mesh_new = new Mesh(GL_TRIANGLES);
+
+    // set the mesh modelMat and lighting vectors and shadow factor
+    c->modelMat = obj.toWorld;
+    c->color = cs237::color4f(obj.color,1.0);
+    c->direc = dir;
+    c->intensity = ints;
+    c->ambient = amb;
+    c->shadowFactor = shadowF;
+
+    //get the mesh data
+    OBJ::Model const *model = scene.Model(obj.model);
+    OBJ::Group const group = model->Group(0);
+    OBJ::Material const material = model->Material(group.material);
+
+    mesh_new->LoadVertices (group.nVerts, group.verts);
+    mesh_new->LoadIndices (group.nIndices, group.indices);
+    mesh_new->LoadNormals (group.nVerts, group.norms);
+    mesh_new->LoadTexCoords (group.nVerts, group.txtCoords);
+
+
+    // get the texture data
+    cs237::image2d *image = scene.TextureByName(material.diffuseMap);
+    cs237::texture2D *texture = new cs237::texture2D(GL_TEXTURE_2D, image);
+    texture->Bind();
+    texture->Parameter(GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+    texture->Parameter(GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+
+    c->image = image;
+    c->texture = texture;
+
+    // get the texture data for normal map
+    cs237::image2d *image2 = scene.TextureByName(material.normalMap);
+    cs237::texture2D *texture2 = new cs237::texture2D(GL_TEXTURE_2D, image2);
+    texture2->Bind();
+    texture2->Parameter(GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+    texture2->Parameter(GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+
+    c->normalImage = image2;
+    c->normalTexture = texture2;
+
+    c->mesh = mesh_new;
+
+    drawable.push_back(c);
+  }
+
+
+*/ 
+/* Orientation for objects loading                               	    10/10 */
+/* Heightfields calculations and loading                                20/20 */
+/* Normal mapping calculations and rendering mode                       0/30 
+
+No normal mapping implemented 
+
+*/
+/* Shadow mapping rendering passes                                      30/30 */
+/* Normal mapping shader program (vertex and fragment shaders)          0/15
+
+No normal mapping mode. 
+
+ */
+/* Shadow mapping shader program(s) (vertex and fragment shaders)        9/15 
+
+
+Shadowing not fully appearing inside the shader program. 
+
+
+*/
+/* User interface controls (normal-mapping, shadowed)                   3/5  
+
+No normal mapping mode
+
+*/
+
+/* subtotal   78/140 */ 
+
+/* === Style, etc. === */
+/* Code documentation, indentation and layout         15/20 
+
+Your shader files could use some documentation and updating and/or adding of the header 
+information to include what the shader is doing as well you as an author. 
+
+*/
+/* Code clarity                                       18/20 
+
+The ground construction should be separated into its own class. Inside the constructor, you
+can then implement how the ground should be created. Inside the view class, you should create
+an instance of the ground structure, which then can be rendered. The idea of the View is just
+to hold the information of the objects to be rendered with no notion on how the objects need to
+be constructed. This allows for code abstraction and clarity of the purpose for the view. 
+
+*/
+/* Code reuse                                         20/20 */
+
+
+/* subtotal  53/60 */ 
+/* 
+
+/* === Extra Credit === */
+/* Extreme mode         -/20 */
+
+
+/* _TOTAL-SCORE_    131/200 */
+
+/* graded by Lamont */

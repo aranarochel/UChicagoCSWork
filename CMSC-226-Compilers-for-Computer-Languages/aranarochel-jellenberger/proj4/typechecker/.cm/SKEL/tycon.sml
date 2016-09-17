@@ -1,0 +1,2 @@
+Skeleton 5
+d2f8d"Atom"d"List"d"Type"Cd"String"d"ListMergeSort"d"BasisNames"d"Stamp"d"TyVar"Nad"TyCon"jh4aä¢Key"è0aä¢Map"jçğ±ÿgp1e"RedBlackMapFn"aä¢Set"jÿ.gp1e"RedBlackSetFn"aä¢Tbl"jÿ$gp1e"HashTableFn"h3aÿ‚gp1c"ORD_SET"aÿ'gp1c"ORD_MAP"aÿ‚&gp1c"MONO_HASH_TABLE"

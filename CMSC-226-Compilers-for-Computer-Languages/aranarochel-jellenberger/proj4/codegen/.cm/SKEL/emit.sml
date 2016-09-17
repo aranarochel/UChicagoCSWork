@@ -1,0 +1,2 @@
+Skeleton 5
+d3f7d"Byte"d"List"Cä¢Word"d"String"d"TextIO"d"Instructions"d"HashString"Cd"Array"d"BinIO"d"Word8"d"StringCvt"d"Labels"Naã¢EMIT"è0ad"Emit"jh4ad"Rep"gp1d"CodeRep"ad"W"gp1ÿad"F"gp1d"Format"ad"StringTbl"jÿ?gp1e"HashTableFn"gp1ÿ8

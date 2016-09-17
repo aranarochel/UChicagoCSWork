@@ -1,0 +1,59 @@
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/aranarochel-jellenberger/!svn/ver/50/proj4/parser
+END
+parse-tree.sml
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/aranarochel-jellenberger/!svn/ver/50/proj4/parser/parse-tree.sml
+END
+sources.cm
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/aranarochel-jellenberger/!svn/ver/50/proj4/parser/sources.cm
+END
+flang.grm.sml
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/aranarochel-jellenberger/!svn/ver/50/proj4/parser/flang.grm.sml
+END
+parser.sml
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/aranarochel-jellenberger/!svn/ver/50/proj4/parser/parser.sml
+END
+flang.lex.sml
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/aranarochel-jellenberger/!svn/ver/50/proj4/parser/flang.lex.sml
+END
+flang.grm
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/aranarochel-jellenberger/!svn/ver/50/proj4/parser/flang.grm
+END
+print-parse-tree.sml
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/aranarochel-jellenberger/!svn/ver/50/proj4/parser/print-parse-tree.sml
+END
+basis-names.sml
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/aranarochel-jellenberger/!svn/ver/50/proj4/parser/basis-names.sml
+END
+flang.lex
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/aranarochel-jellenberger/!svn/ver/50/proj4/parser/flang.lex
+END

@@ -1,0 +1,113 @@
+%Do not change 
+\documentclass[12pt, oneside]{article}
+\usepackage{amssymb,amsmath}
+\usepackage[margin=1in]{geometry}
+\usepackage{textpos}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+
+% You may add the packages you need here
+
+
+
+\begin{document}
+% Do not modify 
+\begin{textblock*}{3cm}(-1.7cm,-2.6cm)
+\noindent {\scriptsize Staple here!} 
+\end{textblock*}
+
+%Do not modify
+\begin{textblock*}{4cm}(-1.7cm,-2.3cm)
+\noindent {\scriptsize CMSC 27100 Autumn 2015} 
+\end{textblock*}
+
+%Do not modify other than putting your name where stated
+\begin{textblock*}{8cm}(12.5cm,-1cm)
+\noindent {Name: Jaime Arana-Rochel} 
+\end{textblock*}
+%Do not modify other than putting your section (1 or 2) where stated
+\begin{textblock*}{3cm}(12.5cm,-0.5cm)
+\noindent {Section: 1} 
+\end{textblock*}
+%Do not modify other than typing your acknowledgement where stated
+\begin{textblock*}{13.5cm}(-1.7cm,-1.8cm)
+\noindent \textit{\footnotesize Acknowledgement: The idea of using Bezout's theorem to prove the contraverse of problem 1 came from Jonathan Bianchini} 
+\end{textblock*}
+
+\vspace{1cm}
+
+%Do not modify other than typing the homework number after #
+\begin{center}
+\textbf{\Large Homework \#3}
+\end{center}
+
+
+%Rest should contain your solution for the homework. Feel free to improvise in ways that you believe make grading easier.
+\subsection*{Q1}
+A) Proof by showing that $P\rightarrow\,Q$ and $Q\rightarrow\,P$ implies $P\leftrightarrow\,Q$
+\\\\
+Let's assume that the system of congruences has a solution. For the system of congruences,
+\[x\equiv\;a_{1} (mod\;m_{1})\;\;\;\;\; x\equiv\;a_{2} (mod\;m_{2})\]
+we have the following due to congruence definitions
+\[m_{1} | x-a_{1}\;\;\;\;and\;\;\;\;m_{2}|x-a_{2}\]
+Let $gcd(m_{1},m_{2})\,=\,d$. By definition $d|m_{1}$ and $d|m_{2}$ which also obviously means that $d|x-a_{1}$ and $d|x-a_{2}$. Using the division definition on the above,
+\[x-a_{1}=k_{1}d\;\;\;\;\;\;and\;\;\;\;\;\; x-a_{2}=k_{2}d\]
+Substituting the value of x (x = $k_{1}d+a_{1}$) from the first equation into the second equation, we get
+\[k_{1}d+a_{1}-a_{2}=k_{2}d\]
+\[a_{1}-a_{2}=(k_{2}-k_{1})d\]
+Using the division definition again on the equation above, we have that $d=gcd(m_{1},m_{2})\;|a_{1}-a_{2}$. This proves the conditional $P\rightarrow\,Q$. Now we proceed to proving the converse.
+\\\\
+Assume that $gcd(m_{1},m_{2})\;|a_{1}-a_{2}$. Using Bezout's theorem we can write
+\[gcd(m_{1},m_{2}) = sm_{1} + tm_{2}\]
+Therefore $sm_{1} + tm_{2}\,|\,a_{1}-a_{2}$. By the division definition and some shifting of terms, we can write the following equations,
+\[a_{1}-a_{2} = k(sm_{1} + tm_{2})\]
+\[a_{1}-a_{2} = ksm_{1} + ktm_{2}\]
+\[a_{1} - ksm_{1} = a_{2} + ktm_{2}\]
+In the equation above, $s$ $t$ and $k$ are just integers so let,
+\[k_{1} = -ks\]
+\[k_{2} = kt\]
+Substituting $k_{1}$ and $k_{2}$ back into the equation we get
+\[a_{1} + k_{1}m_{1} = a_{2} + k_{2}m_{2}\]
+We set the variable $x$ equal to the above equality such that
+\[x = a_{1} + k_{1}m_{1} \Longrightarrow\;x-a_{1} = k_{1}m_{1}\]
+\[and\]
+\[x = a_{2} + k_{2}m_{2} \Longrightarrow\;x-a_{2} = k_{2}m_{2}\]
+By the division definition,
+\[m_{1}\,|\,x-a_{1}\;\;\;\;\;and\;\;\;\;\;m_{2}\,|\,x-a_{2}\]
+Using the modulo congruence definitions we can then write
+\[x\equiv\,a_{1} (mod\;m_{1})\;\;\;\;\;and\;\;\;\;\;x\equiv\,a_{2} (mod\;m_{2})\]
+We've constructed the congruences from our value of x, thus proving the converse $Q\rightarrow\,P$. By proving both conditionals we can say that $P\leftrightarrow\,Q$, satisfying the problem.
+\\
+\subsection*{Q2}
+Problem: Prove if $f(x)$ and $g(x)$ are polynomials with leading terms $ax^{n}$ and $bx^{m}$ respectively, then $f(x)/g(x)\;\sim\;(a/b)x^{n-m}$
+\\\\
+We notice that as the input to $f(x)$ and $g(x)$ get sufficiently large, then the smaller terms in the polynomials disappear leaving only the leading terms since the leading terms grow the fastest.
+\\
+\[\lim\limits_{x\rightarrow\,\infty}\;\frac{f(x)}{g(x)} = \frac{ax^{n}}{bx^{m}} = \frac{ax^{n-m}}{b} = (a/b)x^{n-m}\]
+We now take the following limit,
+\[\lim\limits_{x\rightarrow\,\infty}\;\frac{f(x)/g(x)}{(a/b)x^{n-m}} =  \frac{(a/b)x^{n-m}}{(a/b)x^{n-m}} = 1\]
+Since our limit yielded a 1, then we know that $f(x)/g(x)\;\sim\;(a/b)x^{n-m}$ by definition.
+\\
+\subsection*{Q3}
+Problem: Give a complete proof that for $f(n)=n^{2}$ and $g(n)=n ^{2}log\,n$ we have that $f=O(g)$ and $f=o(g)$
+\\\\
+First we prove that $f=O(g)$. By definition of $Big\;O$
+\[f=O(g)\;\Longrightarrow\;|n^{2}| \leq C\,|n^{2}log\,n|\;\;\;\;\;\;\forall\; x\leq x_{0}\]
+\[ = |n^{2}| \leq\;|n^{2}|\; C|log\,n|\]
+\[1 \leq C|log\,n|\] 
+This inequality is obviously true, which shows that $f=O(g)$. Now we prove that $f=o(g)$. We take the limit of $f(n)$ over $g(n)$
+\[\lim\limits_{x\rightarrow\,\infty} \frac{f(n)}{g(n)} = \frac{n^{2}}{n^{2}log\,n} = \frac{1}{log\,n} = 0\]
+Based on this limit, by definition $f=o(g)$.
+\\
+\subsection*{Q4}
+Problem: Rank the functions by order of growth.
+\\
+\[2^{2^{n+1}}, 2^{2^{n}+1}, n!\,, 2^{n^{2}}, 2^{n}, n^{log\,n}, (log\,n)^{log\,n}, n^{3}, n^{2},\] 
+\[\{log(n!), nlog\,n\},2^{(log\,n)^{2}}, 2^{\sqrt{log\,n}}, (log\,n)^{2}, log\,n, log(log\,n) \]
+\\
+The pair in the list grouped with braces is an equivalence class.
+
+
+
+
+\end{document}

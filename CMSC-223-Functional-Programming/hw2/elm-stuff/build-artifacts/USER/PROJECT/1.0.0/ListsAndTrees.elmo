@@ -1,0 +1,201 @@
+Elm.ListsAndTrees = Elm.ListsAndTrees || {};
+Elm.ListsAndTrees.make = function (_elm) {
+   "use strict";
+   _elm.ListsAndTrees = _elm.ListsAndTrees || {};
+   if (_elm.ListsAndTrees.values)
+   return _elm.ListsAndTrees.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   _P = _N.Ports.make(_elm),
+   $moduleName = "ListsAndTrees",
+   $Basics = Elm.Basics.make(_elm),
+   $List = Elm.List.make(_elm);
+   var almostCompleteTrees = F2(function (_v0,
+   _v1) {
+      return function () {
+         return function () {
+            return _L.fromArray([]);
+         }();
+      }();
+   });
+   var completeTrees = F2(function (_v4,
+   _v5) {
+      return function () {
+         return function () {
+            return _L.fromArray([]);
+         }();
+      }();
+   });
+   var mem = F2(function (i,tree) {
+      return function () {
+         var memHelp = F2(function (t,
+         tracker) {
+            return function () {
+               switch (t.ctor)
+               {case "Empty":
+                  return function () {
+                       switch (tracker.ctor)
+                       {case "::":
+                          switch (tracker._1.ctor)
+                            {case "[]":
+                               return $Basics.not(_U.cmp(tracker._0,
+                                 i) < 0);}
+                            break;
+                          case "[]": return false;}
+                       _U.badCase($moduleName,
+                       "between lines 30 and 33");
+                    }();
+                  case "Node": return _U.cmp(i,
+                    t._0) < 0 ? A2(memHelp,
+                    t._1,
+                    tracker) : A2(memHelp,
+                    t._2,
+                    _L.fromArray([t._0]));}
+               _U.badCase($moduleName,
+               "between lines 29 and 35");
+            }();
+         });
+         return A2(memHelp,
+         tree,
+         _L.fromArray([]));
+      }();
+   });
+   var Node = F3(function (a,b,c) {
+      return {ctor: "Node"
+             ,_0: a
+             ,_1: b
+             ,_2: c};
+   });
+   var Empty = {ctor: "Empty"};
+   var fullTree = F2(function (el,
+   height) {
+      return function () {
+         switch (height)
+         {case 0: return Empty;}
+         return A3(Node,
+         el,
+         A2(fullTree,el,height - 1),
+         A2(fullTree,el,height - 1));
+      }();
+   });
+   var balancedTrees = F2(function (el,
+   size) {
+      return _U.cmp(size,
+      1) < 0 ? _L.fromArray([Empty]) : _U.eq(A2($Basics._op["%"],
+      size,
+      2),
+      1) ? function () {
+         var strees = A2(balancedTrees,
+         el,
+         size / 2 | 0);
+         return A2($List.concatMap,
+         function (l) {
+            return A2($List.map,
+            function (r) {
+               return A3(Node,el,l,r);
+            },
+            strees);
+         },
+         strees);
+      }() : _U.eq(A2($Basics._op["%"],
+      size,
+      2),
+      0) ? function () {
+         var strees2 = A2(balancedTrees,
+         el,
+         ((size - 1) / 2 | 0) + 1);
+         var strees1 = A2(balancedTrees,
+         el,
+         (size - 1) / 2 | 0);
+         return A2($List.concatMap,
+         function (l) {
+            return A2($List.concatMap,
+            function (r) {
+               return _L.fromArray([A3(Node,
+                                   el,
+                                   l,
+                                   r)
+                                   ,A3(Node,el,r,l)]);
+            },
+            strees2);
+         },
+         strees1);
+      }() : _U.badIf($moduleName,
+      "between lines 65 and 74");
+   });
+   var suffixes = function (xs) {
+      return function () {
+         switch (xs.ctor)
+         {case "::":
+            return A2($List._op["::"],
+              xs,
+              suffixes(xs._1));
+            case "[]":
+            return _L.fromArray([_L.fromArray([])]);}
+         _U.badCase($moduleName,
+         "between lines 12 and 22");
+      }();
+   };
+   var isEven = function (i) {
+      return _U.eq(A2($Basics._op["%"],
+      i,
+      2),
+      0);
+   };
+   var create2 = F2(function (el,
+   m) {
+      return function () {
+         switch (m)
+         {case 0: return {ctor: "_Tuple2"
+                         ,_0: Empty
+                         ,_1: A3(Node,el,Empty,Empty)};}
+         return function () {
+            var $ = A2(create2,
+            el,
+            (m - 1) / 2 | 0),
+            l = $._0,
+            r = $._1;
+            return isEven(m - 1) ? {ctor: "_Tuple2"
+                                   ,_0: A3(Node,el,l,l)
+                                   ,_1: A3(Node,
+                                   el,
+                                   l,
+                                   r)} : {ctor: "_Tuple2"
+                                         ,_0: A3(Node,el,l,r)
+                                         ,_1: A3(Node,el,r,r)};
+         }();
+      }();
+   });
+   var balancedTree = F2(function (el,
+   n) {
+      return function () {
+         switch (n)
+         {case 0: return Empty;}
+         return function () {
+            var _ = A2(create2,el,n - 1);
+            var btree = function () {
+               switch (_.ctor)
+               {case "_Tuple2": return _._1;}
+               _U.badCase($moduleName,
+               "on line 49, column 29 to 44");
+            }();
+            return btree;
+         }();
+      }();
+   });
+   _elm.ListsAndTrees.values = {_op: _op
+                               ,isEven: isEven
+                               ,suffixes: suffixes
+                               ,Empty: Empty
+                               ,Node: Node
+                               ,mem: mem
+                               ,fullTree: fullTree
+                               ,balancedTree: balancedTree
+                               ,create2: create2
+                               ,balancedTrees: balancedTrees
+                               ,completeTrees: completeTrees
+                               ,almostCompleteTrees: almostCompleteTrees};
+   return _elm.ListsAndTrees.values;
+};

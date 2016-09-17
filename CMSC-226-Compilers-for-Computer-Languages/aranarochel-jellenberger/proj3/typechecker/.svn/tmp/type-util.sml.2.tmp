@@ -1,0 +1,202 @@
+(* type-util.sml
+ *
+ * COPYRIGHT (c) 2015 John Reppy (http://cs.uchicago.edu/~jhr)
+ * All rights reserved.
+ *
+ * Various utility functions on types.
+ *)
+
+structure TypeUtil : sig
+
+    type ty = Type.ty
+
+  (* return the string representation of a type that is suitable for error messages *)
+    val toString : ty -> string
+
+  (* convert a type to a string representation.  If the first argument is true, then
+   * the unique stamps on type variables and type constructors are shown.  Otherwise,
+   * just the user-defined names are used.
+   *)
+    val fmt : bool -> ty -> string
+
+  (* are two types equal (upto renaming) *)
+    val same : ty * ty -> bool
+
+  (* copy a type while replacing bound variables with fresh variables *)
+    val copy : ty -> ty
+
+  (* compute a substitution on a list of type variables that makes the first type the same as
+   * the second.  Specifically
+   *
+   *	match (tvs, ty1, ty2)  ==>  SOME(tys)
+   *
+   * means that
+   *
+   *	same (apply (tvs, ty1, tys), ty2)
+   *
+   * return NONE if no such substitution exists.
+   * NOTE: we assume that none of the tvs occur in ty2.
+   *)
+    val match : TyVar.t list * ty * ty -> ty list option
+
+  (* apply a type function to a list of type arguments; note that this process will rename
+   * bound variables with fresh variables.
+   *)
+    val apply : TyVar.t list * ty * ty list -> ty
+
+  end = struct
+
+    structure TV = TyVar
+    structure TC = TyCon
+    structure Ty = Type
+
+    datatype ty = datatype Type.ty
+
+    fun fmt showStamps ty = let
+	  val tv2s = if showStamps
+		then TV.toString
+		else TV.nameOf
+	  val tc2s = if showStamps
+		then TC.toString
+		else TC.nameOf
+	  fun toS (ty, l) = (case ty
+		 of PolyTy(tv::tvs, ty) =>
+		      "[" :: tv2s tv
+			:: List.foldr (fn (tv, l) => "," :: tv2s tv :: l) ("] " :: toS(ty, l)) tvs
+		  | PolyTy([], ty) => "[] " :: toS(ty, l) (* should never happen! *)
+		  | VarTy tv => tv2s tv :: l
+		  | ConTy(tyc, []) => tc2s tyc :: l
+		  | ConTy(tyc, ty::tys) =>
+		      tc2s tyc :: "["
+			:: toS(ty, List.foldr (fn arg => ", " :: toS arg) ("]" :: l) tys)
+		  | FunTy(ty1, ty2) => let
+		      val l = " -> " :: toS(ty2, l)
+		      in
+			case ty1
+			 of PolyTy _ => paren (ty1, l)
+			  | FunTy _ => paren (ty1, l)
+			  | _ => toS(ty1, l)
+			(* end case *)
+		      end
+		  | TupleTy (ty::tys) => let
+		      fun toS' (ty as PolyTy _, l) = paren (ty, l)
+			| toS' (ty as FunTy _, l) = paren (ty, l)
+			| toS' (ty as TupleTy _, l) = paren (ty, l)
+			| toS' (ty, l) = toS (ty, l)
+		      in
+			toS' (ty, List.foldr (fn arg => " * " :: toS' arg) l tys)
+		      end
+		  | TupleTy [] => "()" :: l (* should never happen! *)
+		  | ErrorTy => "<error>" :: l
+		(* end case *))
+	  and paren (ty, l) = "(" :: toS (ty, ")" :: l)
+	  in
+	    String.concat (toS (ty, []))
+	  end
+
+    val toString = fmt false
+
+  (* are two types equal (upto renaming) *)
+    fun same (ty1, ty2) = (case (ty1,ty2)
+      of (PolyTy(tyvars1,ty1), PolyTy(tyvars2,ty2))
+          => let
+               fun compare(tlist1,tlist2) = (case(tlist1,tlist2)
+                 of ([],[]) => true
+                  | (x::xs, y::ys) => (TyVar.same(x,y) andalso compare(xs,ys))
+                  | (_,_) => false
+                  (*end case*))
+             in
+               compare(tyvars1,tyvars2) andalso same(ty1,ty2)
+             end
+       | (VarTy(tyvar1), VarTy(tyvar2))
+          => TyVar.same(tyvar1,tyvar2)
+       | (ConTy(tycon1, tys1), ConTy(tycon2, tys2)) 
+          => let
+               fun compare(tlist1,tlist2) = (case(tlist1,tlist2)
+                 of ([],[]) => true
+                  | (x::xs, y::ys) => (same(x,y) andalso compare(xs,ys))
+                  | (_,_) => false
+                  (*end case*))
+             in
+               compare(tys1,tys2) andalso TyCon.same(tycon1,tycon2)
+             end
+       | (FunTy(ty1a,ty1b), FunTy(ty2a,ty2b)) 
+          => same(ty1a, ty2a) andalso same(ty1b,ty2b)
+       | (TupleTy(tys1), TupleTy(tys2)) 
+          => let
+               fun compare(tlist1,tlist2) = (case(tlist1,tlist2)
+                 of ([],[]) => true
+                  | (x::xs, y::ys) => (same(x,y) andalso compare(xs,ys))
+                  | (_,_) => false
+                  (*end case*))
+             in
+               compare(tys1,tys2)
+             end
+       | (ErrorTy, _ )  => true (* This theoretically helps prevent cascading errors? *)
+       | (_, ErrorTy)   => true
+       | _              => false
+       (*end case*))
+
+
+  (* copy a type while replacing bound variables with fresh variables *)
+    fun copy ty = (case ty 
+         of PolyTy (tyvars, ty') 
+           => let 
+                  fun apply vList = map (fn x => TyVar.copy x) vList
+              in
+                  PolyTy(apply tyvars, copy ty')
+              end
+          | VarTy tyvar          
+            => VarTy (TyVar.copy tyvar)
+          | ConTy (tycon, tys)
+            => ConTy (tycon, map (fn x => copy x) tys)
+          | FunTy (ty1, ty2) => FunTy (copy ty1, copy ty2)
+          | TupleTy tys => TupleTy (map (fn x => copy x) tys)
+          | _ => ty
+          (* end case *))  
+
+
+  (* compute a substitution on a list of type variables that makes the first type the same as
+   * the second.  Specifically
+   *
+   *  match (tvs, ty1, ty2)  ==>  SOME(tys)
+   *
+   * means that
+   *
+   *  same (apply (tvs, ty1, tys), ty2)
+   *
+   * return NONE if no such substitution exists.
+   * NOTE: we assume that none of the tvs occur in ty2.
+   * val match : TyVar.t list * ty * ty -> ty list option
+
+     EX:
+      match ( 
+              [a, b], 
+              TupleTy[a, b], 
+              TupleTy
+                [
+                  ConTy(boolTyc, []), 
+                  ConTy(intTyc, [])
+                ]
+            )
+      => SOME[ConTy(boolTyc, []), ConTy(intTyc, [])]
+   *
+   *
+   *)
+
+  fun match ([], ty1, ty2) = if same(ty1, ty2) then SOME[] else NONE
+        | match (tvs, ty1, ty2) = raise Fail "todo"
+
+
+  (* apply a type function to a list of type arguments; note that this process will rename
+   * bound variables with fresh variables.
+        val apply : TyVar.t list * ty * ty list -> ty
+   *)
+
+    fun apply ([], ty, []) = copy ty
+<<<<<<< .mine
+      | apply (params, ty, args) = raise Fail "uhh"
+
+end=======
+      | apply (params, ty, args) = raise Fail "todo"
+end>>>>>>> .r41

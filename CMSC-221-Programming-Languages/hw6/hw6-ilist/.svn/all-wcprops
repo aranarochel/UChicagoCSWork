@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/aranarochel-cs221-spr-14/!svn/ver/81/hw6/hw6-ilist
+END
+tests.sml
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/aranarochel-cs221-spr-14/!svn/ver/72/hw6/hw6-ilist/tests.sml
+END
+sources.cm
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/aranarochel-cs221-spr-14/!svn/ver/72/hw6/hw6-ilist/sources.cm
+END
+instrumented-list-sig.sml
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/aranarochel-cs221-spr-14/!svn/ver/81/hw6/hw6-ilist/instrumented-list-sig.sml
+END
+instrumented-list.sml
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/aranarochel-cs221-spr-14/!svn/ver/81/hw6/hw6-ilist/instrumented-list.sml
+END
+check.sml
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/aranarochel-cs221-spr-14/!svn/ver/72/hw6/hw6-ilist/check.sml
+END

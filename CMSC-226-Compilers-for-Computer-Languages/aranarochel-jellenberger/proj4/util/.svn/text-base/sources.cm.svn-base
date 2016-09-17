@@ -1,0 +1,22 @@
+(* sources.cm
+ *
+ * COPYRIGHT (c) 2015 John Reppy (http://www.cs.uchicago.edu/~jhr)
+ * All rights reserved.
+ *
+ * CMSC 22610 Sample code (Winter 2015)
+ *
+ * CM file for the FLang compiler utility code.
+ *)
+
+Library
+
+  structure Error
+  structure Stamp
+
+is
+  $/basis.cm
+  $/smlnj-lib.cm
+  $/ml-lpt-lib.cm
+
+  error.sml
+  stamp.sml

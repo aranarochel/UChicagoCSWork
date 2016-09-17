@@ -1,0 +1,70 @@
+/* Jaime Arana-Rochel, aranarochel */
+/* CS152, Winter 2013 */
+/* Lab 4 */
+#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
+
+/* calc : int int int double -> int */
+/* calculates the color value */
+int calc(int len,int x,int y,double s)
+{
+  double z2 = (len/2);
+  double distance = sqrt(((z2-x) * (z2-x)) + 
+			 ((z2-y) * (z2-y)));
+  double i = sin(s*distance);
+
+  return ((i+1)*255)/2;
+}
+
+
+/* sinsquare : int double double double -> <void> */
+/* given a square lenght, and rgb scalar doubles,
+   produces a ppm image */
+void sinsquare(int len,double r,double g,double b)
+{
+  int x,y;
+
+  printf("P3\n");
+  printf("%d %d\n",len,len);
+  printf("255\n");
+
+  for(y = 0; y < len; y++) {
+    for(x = 0; x < len; x++) {
+      printf("%d %d %d\n",
+	     calc(len,x,y,r),calc(len,x,y,g),calc(len,x,y,b));
+    }
+  }
+}
+
+
+int main(int argc,char *argv[])
+{
+  int c;
+  int s = 480;
+  double r = 1.0;
+  double g = 1.0;
+  double b = 1.0;
+
+  while (--argc > 0 && (*++argv)[0] == '-')
+    while (c = *++argv[0])
+      switch (c) {
+      case 's':
+	s = atoi(argv[1+1]);
+	break;
+      case 'r':
+	r = atoi(argv[4]);
+	break;
+      case 'g':
+	g = atoi(argv[6]);
+	break;
+      case 'b':
+	b = atoi(argv[8]);
+	break;
+      }
+  sinsquare(s,r,g,b);
+  return 0;
+}
+  
+	
+    

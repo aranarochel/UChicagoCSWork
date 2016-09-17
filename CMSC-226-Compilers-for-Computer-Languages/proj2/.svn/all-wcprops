@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/aranarochel-cs22610-win-15/!svn/ver/35/proj2
+END
+parse-tree.sml
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/aranarochel-cs22610-win-15/!svn/ver/29/proj2/parse-tree.sml
+END
+sources.cm
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/aranarochel-cs22610-win-15/!svn/ver/26/proj2/sources.cm
+END
+error.sml
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/aranarochel-cs22610-win-15/!svn/ver/26/proj2/error.sml
+END
+flang-hand-lexer.sml
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/aranarochel-cs22610-win-15/!svn/ver/26/proj2/flang-hand-lexer.sml
+END
+parser.sml
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/aranarochel-cs22610-win-15/!svn/ver/26/proj2/parser.sml
+END
+flang.grm
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/aranarochel-cs22610-win-15/!svn/ver/40/proj2/flang.grm
+END
+print-parse-tree.sml
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/aranarochel-cs22610-win-15/!svn/ver/29/proj2/print-parse-tree.sml
+END
+basis-names.sml
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/aranarochel-cs22610-win-15/!svn/ver/26/proj2/basis-names.sml
+END
+flang.lex
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/aranarochel-cs22610-win-15/!svn/ver/29/proj2/flang.lex
+END
+flang-hand-scanner-sig.sml
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/aranarochel-cs22610-win-15/!svn/ver/26/proj2/flang-hand-scanner-sig.sml
+END

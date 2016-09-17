@@ -1,0 +1,191 @@
+/* Jaime Arana-Rochel, aranarochel */
+/* CS152, Winter 2013 */
+/* Homework 1 */
+#include <stdio.h>
+#include <math.h>
+
+/* gcd : int int -> int */
+/* greatest common divisor */
+int gcd(unsigned int a, unsigned int b)
+{
+  if (b == 0) {
+    return a;
+  } else if (a >= b) {
+    return gcd(b, a % b);
+  } else if (b >= a) {
+    return gcd(a, b % a);
+  }
+  /* #grader: return type doesn't match variable type
+              want to declare unsigned int as the return type of function gcd 
+  */
+}
+
+/* area_pipe : int int int -> int */
+/* computes the area of a pipe */
+double area_pipe(double i, double l, double t)
+{
+  double r = i + t;
+  double pi = M_PI;
+  double donut = 2 * ((pi * r * r) - (pi * i * i));
+  double outer = l * 2 * pi * r;
+  double inner = l * 2 * pi * i;
+
+  return donut + outer + inner;
+  /* #grader: Good! */
+}
+
+
+/* adj : int int -> int */
+/* calculates adjustment given month and year */
+int adj(int m, int y)
+{
+  /* #grader:  the leap years are not correctly identified.
+               should use ((y%4==0) && (y%100!=0)) || (y%400==0)
+               may set up a function for identifying leap years instead
+               of duplicating the code. 
+  */
+  if (m == 1) {
+    if ((y % 400 == 0 && y % 100 != 0) || y % 400 == 0) {
+      return 0;
+    } else {
+      return 1;
+    }
+  } else if (m == 2) {
+    if ((y % 400 == 0 && y % 100 != 0) || y % 400 == 0) {
+      return 3;
+    } else {
+      return 4;
+    }
+  } else if (m == 3) {
+    return 4;
+  } else if (m == 4) {
+    return 0;
+  } else if (m == 5) {
+    return 2;
+  } else if (m == 6) {
+    return 5;
+  } else if (m == 7) {
+    return 0;
+  } else if (m == 8) {
+    return 3;
+  } else if (m == 9) {
+    return 6;
+  } else if (m == 10) {
+    return 1;
+  } else if (m == 11) {
+    return 4;
+  } else if (m == 12) {
+    return 6;
+  }
+  /* #grader: this is too lenghty. use 'switch' and 'case' to 
+              build the selective structure. besides, need to handle the 
+              case that none of the else if condition is satisfied,
+              e.g. m = 13.
+  */ 
+}
+
+
+/* dow : int int int -> int */
+/* computes day of week */
+int dow(int m, int d, int y)
+{
+  int n = (y - 1900) + adj(m,y) + d + (int)floor(y / 4);
+  int w = fmod(n,7);
+
+  return w;
+}
+
+
+
+
+
+/*
+int main(int argc, char *argv[])
+{
+  printf("%d %d %d %lf\n",gcd(2,2),gcd(8,2),gcd(2,8),area_pipe(2.0, 3.0, 4.0));
+  printf("%d",dow(9,9,1999));
+}
+*/
+
+/* GRADERS TESTS */
+void GRADERS_TESTS()
+{
+  /* *** graders' tests *** */
+  printf("****** GRADERS' TESTS\n\n");
+
+  /* tests for gcd */
+  printf("****** testing gcd\n\n");
+  printf("%d [1]\n", gcd(2,3));
+  printf("%d [1]\n", gcd(3,2));
+  printf("%d [7]\n", gcd(7,77));
+  printf("%d [9]\n", gcd(9,99));
+  putchar('\n');
+
+  /* tests for area_pipe */
+  printf("****** testing area_pipe\n\n");
+  printf("%f [14.137...]\n", area_pipe(0.5,1.0,0.5));
+  printf("%f [207.345...]\n", area_pipe(1.0,10.0,1.0));
+  printf("%f [622.035...]\n", area_pipe(4.0,10.0,1.0));
+  putchar('\n');
+
+  /* tests for dow */
+  printf("****** testing dow\n\n");
+
+  printf("%d [1]\n", dow(1,1,1990));
+  printf("%d [4]\n", dow(2,1,1990));  
+  printf("%d [4]\n", dow(3,1,1990));  
+  printf("%d [0]\n", dow(4,1,1990));  
+  printf("%d [2]\n", dow(5,1,1990));  
+  printf("%d [5]\n", dow(6,1,1990));  
+  printf("%d [0]\n", dow(7,1,1990));  
+  printf("%d [3]\n", dow(8,1,1990));  
+  printf("%d [6]\n", dow(9,1,1990));  
+  printf("%d [1]\n", dow(10,1,1990));  
+  printf("%d [4]\n", dow(11,1,1990));  
+  printf("%d [6]\n", dow(12,1,1990));  
+
+  printf("%d [4]\n", dow(1,1,2004));
+  printf("%d [0]\n", dow(2,1,2004));  
+  printf("%d [1]\n", dow(3,1,2004));  
+  printf("%d [4]\n", dow(4,1,2004));  
+  printf("%d [6]\n", dow(5,1,2004));  
+  printf("%d [2]\n", dow(6,1,2004));  
+  printf("%d [4]\n", dow(7,1,2004));  
+  printf("%d [0]\n", dow(8,1,2004));  
+  printf("%d [3]\n", dow(9,1,2004));  
+  printf("%d [5]\n", dow(10,1,2004));  
+  printf("%d [1]\n", dow(11,1,2004));  
+  printf("%d [3]\n", dow(12,1,2004));  
+
+  putchar('\n');
+
+  /* tests for luhn */
+  /*
+  printf("****** testing luhn\n");
+  printf("%d [1]\n", luhn(18929));
+  printf("%d [0]\n", luhn(18928));
+  printf("%d [1]\n", luhn(2222222));
+  printf("%d [0]\n", luhn(3333334));
+  */
+  return;
+}
+
+int main(int argc, char* argv[])
+{
+  GRADERS_TESTS();
+  return 0;
+}
+
+/* evaluation */
+
+/* gcd            8/10 */
+/* area_pipe      20/20 */
+/* dow            16/20 (check formula for finding leap year) */
+/* luhn           0/20 (not found) */
+
+/* style          10/12 */
+/* svn             4/ 4 */
+
+/* _total-score_  58/86 */
+
+/* graded by Liwen Zhang */

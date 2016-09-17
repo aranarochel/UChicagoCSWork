@@ -1,0 +1,27 @@
+Group
+
+  (* representations *)
+  structure Ty
+  structure Token
+  structure Lex  
+  structure Parse
+  structure Labels
+  structure Subtype
+  (* testing framework *)
+  structure Check
+  structure Tests
+is
+  $/basis.cm
+  ty.sml
+  token.sml
+  lex-sig.sml
+  lex.sml
+  parse-sig.sml
+  parse.sml
+  labels-sig.sml
+  labels.sml
+  subtype-sig.sml
+  subtype.sml
+  check-sig.sml
+  check.sml
+  tests.sml

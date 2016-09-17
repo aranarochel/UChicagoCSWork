@@ -1,0 +1,121 @@
+%Do not change 
+\documentclass[12pt, oneside]{article}
+\usepackage{amssymb,amsmath}
+\usepackage[margin=1in]{geometry}
+\usepackage{textpos}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+
+% You may add the packages you need here
+
+
+
+\begin{document}
+%Do not modify
+\begin{textblock*}{4cm}(-1.7cm,-2.3cm)
+\noindent {\scriptsize CMSC 27100 Autumn 2015} 
+\end{textblock*}
+
+%Do not modify other than putting your name where stated
+\begin{textblock*}{8cm}(12.5cm,-1cm)
+\noindent {Name: Jaime Arana-Rochel} 
+\end{textblock*}
+%Do not modify other than putting your section (1 or 2) where stated
+\begin{textblock*}{3cm}(12.5cm,-0.5cm)
+\noindent {Section: 1} 
+\end{textblock*}
+%Do not modify other than typing your acknowledgement where stated
+\begin{textblock*}{13.5cm}(-1.7cm,-1.8cm)
+\noindent \textit{\footnotesize Acknowledgement: } 
+\end{textblock*}
+
+\vspace{1cm}
+
+%Do not modify other than typing the homework number after #
+\begin{center}
+\textbf{\Large Homework \#4}
+\end{center}
+
+
+%Rest should contain your solution for the homework. Feel free to improvise in ways that you believe make grading easier.
+\subsection*{Q1}
+Problem: Prove that 21 divides $4^{n+1} + 5^{2n-1}$ whenever $n$ is a positive integer.
+
+\begin{proof}:
+The problem, $P(n)$, can be proved using induction.\\\\
+\textit{Basis}: Let $n=1$. Then $P(1)$ is,
+\[4^{1+1} + 5^{2-1} = 4^{2} + 5 = 21\]
+
+ This value is obviously divisible by 21 so $P(n)$ then holds for the base case $n=1$\\\\
+\textit{Inductive Step}: Assume that $P(n)$ is true for some arbitrary positive integer $n=k$. So $P(k)$ means that,
+\[4^{k+1} + 5^{2k-1}\]
+
+is divisible by 21.
+
+Let $n = k+1$. $P(k+1)$ is,
+\[4^{(k+1)+1} + 5^{2(k+1)-1} = 4^{k+2} + 5^{2k+1}\]
+\[= 4\cdot4^{k+1} + 5^{2}\cdot5^{2k-1} = 4\cdot4^{k+1} + 25\cdot5^{2k-1}\]
+\[= 4(4^{k+1} + 5^{2k-1}) + 21\cdot5^{2k-1} \]
+
+By the induction hypothesis and the division theorem, the first term $(4(4^{k+1} + 5^{2k-1}))$ in the equation above is divisible by 21. The second term $(21\cdot5^{2k-1})$ is also divisible by 21 by the division theorem. Since both terms are divisible by 21, then the whole equation is divisible by 21, proving the inductive step. Therefore, by induction, P(n) is true for positive integers.\\
+\end{proof}
+
+\subsection*{Q2}
+Problem: Prove that the first player has a winning strategy for the
+game of Chomp, introduced in Example 12 in Section 1.8,
+if the initial board is two squares wide, that is, a 2 $\times$ n
+board.
+
+\begin{proof}
+The problem can be proved using strong induction, when the first player moves first and chomps the bottom rightmost cookie in his turn.\\\\
+\textit{Basis}: Let $n=1$ so that we have a $2\times1$ board. Since $P1$ moved first, $P2$ has no choice but to eat the remaining poison cookie.\\\\
+\textit{Inductive Step}: Assume that $P1$ has a winning strategy for $2\times i$ boards for $1 \leq i \leq k$ and $P1$ has moved first and eaten the bottom rightmost cookie. Assuming now that the board is of size $2\times k+1$, then $P2$ has two choices as the next move.\\
+
+\textit{Case 1}: Suppose that $P2$ eats the $j^{th}$ cookie in the top row, in which case we are left with a smaller board of size $2\times j-1$. Obviously, the $2\times j-1$ board is $\leq$ a $2\times k$ board, in which case once $P1$ eats the bottom rightmost cookie of this new smaller board, $P1$ has a winning strategy by the induction hypothesis.\\
+
+\textit{Case 2}: Suppose $P2$ eats the $j^{th}$ cookie in the bottom row. If $P1$ then eats the $j^{th} + 1$ cookie in the top row, we have a $2\times j$ board with the bottom rightmost cookie chomped out. It follows that $2\times j \leq 2\times k$, in which case $P1$ has a winning strategy by the induction hypothesis.\\
+Since $P1$ has a winning strategy in both cases, by induction $P1$ has a winning strategy for the game of Chomp if the initial board is two squares wide, that is, a 2 $\times$ n
+board.\\
+\end{proof}
+
+\subsection*{Q3}
+Problem: Find the flaw with the following “proof” that $a^{n} = 1$ for
+all nonnegative integers $n$, whenever $a$ is a nonzero real
+number.
+\\\\
+Solution: The flaw in the proof lies in the inductive step where the the following equation is derived for $a^{k+1}$,
+\[\frac{a^{k}\cdot a^{k}}{a^{k-1}}\]
+The proof depends on applying the induction hypothesis on both terms in the numerator and the term in the denominator for nonnegative $k$. Consider then trying to calculate $a^{1} = a^{0 + 1} $. In this case where $k=0$, the denominator equal $a^{-1}$. The induction hypothesis cannot be applied to this term because the exponent is negative, thus the case does not hold for $a^{1}$. Since $a^{1}$ does not follow from $a^{0}$, then the whole induction process fails.
+\\
+\subsection*{Q4}
+Problem : The International Telecommunications Union (ITU)
+specifies that a telephone number must consist of a country
+code with between 1 and 3 digits, except that the code 0
+is not available for use as a country code, followed by
+a number with at most 15 digits. How many available
+possible telephone numbers are there that satisfy these
+restrictions?
+\\\\
+We first figure the number of ways to choose the country code. Since the code can be either 1, 2, or 3 digits long, we use the product rule to figure out the choices for each individual digit length and then we can use the sum rule to count the possible codes total. 
+\[1\;digit: 9\;choices \]
+\[2\;digits: 10\cdot 10 = 100\;choices\]
+\[3\;digits: 10\cdot 10\cdot 10 = 1000\;choices\]
+The total possible area codes are then, $9+100+1000 = 1109$ codes. We use the sum and product rules in conjunction again to count the possible numbers of variable length up to 15 digits.
+\[1\;digit: 10\;choices,\;\;2\;digits: 10^{2}\;choices,...,15\;digits: 10^{15}\;choices\]
+Total possible numbers is then, $\sum\limits_{i = 1}^{15} 10^{i} = 1.11111111111111\times10^{15}$. Finally the total number of telephone number possibilities is, $1109 \cdot \sum\limits_{i = 1}^{15} 10^{i} = 1.23222222222222099\times10^{18}$
+\\
+\subsection*{Q5}
+Problem: There are 51 houses on a street. Each house has an address
+between 1000 and 1099, inclusive. Show that at least two
+houses have addresses that are consecutive integers. 
+\\\\
+Say we want to choose addresses such that they are not consecutive integers, then the houses can have all even numbered addresses or odd numbered addresses. Since there is a total of 100 possible addresses, we can show this by creating 50 pairs of addresses such that an even address is followed by its consecutive odd address.
+\[\{1000,1001\},\{1002,1003\},...,\{1098,1099\}  \]
+We can assign each house an address from one of these pairs. Since there are 50 pairs of addresses and 51 houses, by the pigeon hole principle two houses will have to choose an address from the same pair. Since two houses cannot have the same address, this means that the two houses will have addresses that are consecutive integers.
+
+
+
+
+
+
+\end{document}

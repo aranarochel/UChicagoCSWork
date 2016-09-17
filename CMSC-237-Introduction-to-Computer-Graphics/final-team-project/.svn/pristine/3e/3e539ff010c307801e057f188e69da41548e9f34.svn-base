@@ -1,0 +1,80 @@
+/* Project 5 Rubric */
+/*CMSC 23700, Fall 2015 */
+
+/* === Correctness === */
+/* Basic renderer with directional lighting   30/35 
+
+Index: final-project/src/camera.cxx
+===================================================================
+--- final-project/src/camera.cxx	(revision 47)
++++ final-project/src/camera.cxx	(working copy)
+@@ -31,6 +31,7 @@
+cs237::mat4x4f Camera::viewTransform () const
+{
+   std::cout<<"ARE YOU SURE YOU WANT THE CAMERA TO BE AT THE ORIGIN?\n";
++// FEEDBACK: Yes; we are assuming a two-step transformation as described in Section 4.1 of the handout
+   return cs237::lookAt (
+   cs237::vec3f(0.0f, 0.0f, 0.0f),
+   this->_dir,
+Index: final-project/src/map-cell.hxx
+===================================================================
+--- final-project/src/map-cell.hxx	(revision 47)
++++ final-project/src/map-cell.hxx	(working copy)
+@@ -142,6 +142,8 @@
+
+ // dump the tile tree to an output stream
+   void Dump (std::ostream &outS);
++// FEEDBACK: it is bad style to expose private instance variables.  Use accessor
++// functions instead
+   Cell  *_cell;   //!< the cell that contains this tile
+
+   Texture *colorTex;
+Index: final-project/src/render.cxx
+===================================================================
+--- final-project/src/render.cxx	(revision 47)
++++ final-project/src/render.cxx	(working copy)
+@@ -35,4 +35,6 @@
+   cs237::color4ub{ 255,   0,   0, 255 },
+   cs237::color4ub{   0, 255,   0, 255 }
+   };
+-// We don't have a render Class so this is useless.
+\ No newline at end of file
++// We don't have a render Class so this is useless.
++// FEEDBACK: the idea was to place rendering related code in this file
++// (including the View::Render and Cell::InitTextures methods)
+\ No newline at end of file
+Index: final-project/src/view.cxx
+===================================================================
+--- final-project/src/view.cxx	(revision 47)
++++ final-project/src/view.cxx	(working copy)
+@@ -381,6 +381,9 @@
+   glPrimitiveRestartIndex(0xffff);
+
+   //create the vao used to store data
++// FEEDBACK: you should have one VAO per rendered chunk in the mesh
++// Cache the VAOs in the Tile objects.  Acquire and release them as the tile
++// visibility changes.
+   struct VAO *vao = this->VAOCache()->Acquire();
+   Map *copy = this->map;
+
+*/ 
+
+/* subtotal   30/35 */ 
+
+/* === Style, etc. === */
+/* Code documentation, indentation and layout         5/5 */
+/* Code clarity                                       5/5 */
+/* Code reuse                                         5/5 */
+
+/* subtotal  15/15 */ 
+/* 
+
+/* === Extra Credit === */
+/* View frustum culling        10/10 */
+/* Morphing 			 		0/10 */ 
+/* Fog			   	 		   10/10 */ 
+
+
+/* _TOTAL-SCORE_    45 + 20 /50 */
+
+/* graded by Lamont */

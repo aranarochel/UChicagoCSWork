@@ -1,0 +1,105 @@
+/* Jaime Arana-Rochel, aranarochel */
+/* CS 152, Winter 2013 */
+/* Lab 2 */
+#include<stdio.h>
+
+/* expt : int int -> int */
+/* #grader: Should be int unsigned_int -> long_int */
+/* computes some integer a to the nth power, for natural n */
+long int expt(int a, unsigned int n)
+{
+  int c;
+    /* #grader: Don't declare variables that you don't use */
+
+  if (n == 0) {
+    return 1;
+  } else if (n > 0) {
+    return a * expt(a, n - 1);
+  }
+}
+
+
+/* ss : int int -> int */
+/* #grader: Should be int unsigned_int -> long_int */
+/* exponentiation by successive squaring */
+long int ss(int a, unsigned int n)
+{
+  int i = n / 2;
+
+  if (n == 0) {
+    return 1;
+      /* #grader: Unneeded case (below) */
+  } else if (n == 1) {
+    return a;
+  } else if (n % 2 == 0) {      /* condition for even case */
+    return ss(a * a, i);
+  } else {
+    return a * ss(a * a, (n - 1) / 2);
+  }
+}
+
+/* ssm : int int int -> int */
+/* #grader: Should be int, unsigned_int, unsigned_int -> int */
+/* exponentiation modulo m */
+int ssm(int a, unsigned int n, unsigned int m)
+{
+  int i = n / 2;
+
+  if (n == 0) {
+    return 1;
+      /* #grader: Unneeded case (below) */
+  } else if (n == 1) {
+    return a;
+  } else if (n % 2 == 0) {
+    return ssm(a * a, i, m) % m;
+      /* #grader: Should be squaring the ssm(a,i,m) expression, then modulo m */
+  } else {
+    return a * ssm(a * a, (n - 1) / 2, m) % m;
+      /* #grader: Should be only multiplying by a on outside, and passing n-1, not (n-1)/2 */
+  }
+}
+
+
+/* main : int char*-array -> int */
+/* tests the exponential functions */
+int main(int argc, char *argv[])
+{
+  printf("%d\n %d\n %d\n",ssm(4,15,9),ssm(13,8435,67),ssm(3,597854,486));
+    grader_main();
+  return 0;
+}
+
+/**** Grader Tests *****/
+int grader_main()
+{
+    printf("**************Grader's Tests**************\n");
+    printf("Should print:\n1\n20\n243\n");
+    printf("%d\n%d\n%d\n",ssm(4,15,9),ssm(13,8435,67),ssm(3,597854,486));
+    return 0;
+}
+
+/*
+ 
+ This main program should print
+ 1
+ 20
+ 243
+ 
+ 
+ /* grader evaluation */
+
+/* expt          : 12/12 */
+/* ss            : 15/15 */
+/* ssm           :  8/15 */
+/* main          :  8/ 8 */
+
+/* style         : 7/10 *//* #grader: Some contracts incorrect */
+/* svn           :  4/ 4 */
+
+/* _total-score_ : 54/64 */
+
+/* graded by Luke Peeler */
+
+
+
+

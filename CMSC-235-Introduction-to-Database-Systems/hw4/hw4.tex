@@ -1,0 +1,50 @@
+\documentclass{article}[12pt]
+
+\setlength{\parskip}{8pt}
+\setlength{\parindent}{0cm}
+
+\newcommand{\assignment}{Homework 4}
+\newcommand{\whoami}{Jaime Arana-Rochel}
+\newcommand{\assignmentdate}{May 11, 2015}
+
+\begin{document}
+
+{\large \bf CMSC 23500: Introduction to Databases}
+
+\assignment \\
+\whoami \\
+\assignmentdate
+
+\hrulefill
+
+\section*{East Beast}
+\begin{itemize}
+
+\item[1.] 
+$\\OneHop\;=\:\:\rho_{dst\rightarrow code}\;(\pi_{dst}\,(\sigma_{src\;=\;"XYZ"}\;flights))$
+$\\H_{1}\,=\,\pi_{name}\;(OneHop\;\bowtie\;airports)$ \\\\
+Answer: $H_{1}$
+\\
+\item[2.] 
+$\\OneHop\;=\:\:\rho_{dst\rightarrow srcOne}\;(\pi_{dst}\,(\sigma_{src\;=\;"XYZ"}\;flights))$
+$\\TwoHop\;=\;\rho_{dst\,\rightarrow\,code}\,(\pi_{dst}\,(\sigma_{src\,=\,srcOne} (OneHop\,\bowtie\,flights)))$
+$\\H_{2}\,=\,\pi_{name}\,(TwoHop\,\bowtie\,airports)$ \\\\
+Answer: $H_{2}$
+\\
+\item[3.] 
+$\\OneHop\;=\:\:\rho_{dst\rightarrow srcOne}\;(\pi_{dst}\,(\sigma_{src\;=\;"XYZ"}\;flights))$
+$\\TwoHop\;=\;\rho_{dst\,\rightarrow\,srcTwo}\,(\pi_{dst}\,(\sigma_{src\,=\,srcOne}\,(OneHop\,\bowtie\,flights)))$
+$\\ThreeHop\;=\;\rho_{dst\,\rightarrow\,code}\,(\pi_{dst}\,(\sigma_{src\,=\,srcTwo}\,(TwoHop\,\bowtie\,flights)))$
+$\\H_{3}\,=\,\pi_{name}\,(ThreeHop\,\bowtie\,airports)$ \\\\
+Answer: $H_{3}$
+\\
+\item[4.]
+$\\$
+Answer: $H_{1}\,\cup\,H_{2}\,\cup\,H_{3}$
+
+
+
+\end{itemize}
+
+
+\end{document}

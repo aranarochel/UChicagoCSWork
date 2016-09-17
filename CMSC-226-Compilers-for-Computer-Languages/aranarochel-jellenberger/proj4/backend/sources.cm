@@ -1,0 +1,27 @@
+(* sources.cm
+ *
+ * CMSC22610 Winter 2015
+ *
+ * COPYRIGHT (c) 2015 John Reppy (http://www.cs.uchicago.edu/~jhr)
+ * All rights reserved.
+ *
+ * CM file for the conversion phase
+ *)
+
+Library
+
+  structure Backend
+
+is
+  $/basis.cm
+  $/smlnj-lib.cm
+  $/ml-lpt-lib.cm
+
+  ../util/sources.cm
+  ../parser/sources.cm
+  ../typechecker/sources.cm
+  ../codegen/sources.cm
+
+  backend.sml
+  code-gen.sml
+  simple.sml

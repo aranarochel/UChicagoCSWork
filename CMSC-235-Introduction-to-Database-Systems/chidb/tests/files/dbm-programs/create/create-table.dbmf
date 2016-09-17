@@ -1,0 +1,52 @@
+# Test CREATE-TABLE
+#
+# Creates an empty table (including adding an entry
+# in the schema table)
+#
+# Registers:
+# 0: Contains the schema table root page (1)
+# 1: Contains the root page of the new table (should be 2)
+# 2 through 6: Used to create the new record to be inserted
+#              in the schema table
+# 7: Stores the record
+# 8: Stores the key for the record
+
+CREATE create-table.cdb
+
+%%
+# Open the schema table using cursor 0
+Integer      1  0  _  _  
+OpenWrite    0  0  5  _
+
+# Create a new B-Tree, store its root page in register 4
+CreateTable  4  _  _  _
+
+# Create the rest of the record
+String       5  1  _  "table"
+String       8  2  _  "products"
+String       8  3  _  "products"
+String       73 5  _  "CREATE TABLE products(code INTEGER PRIMARY KEY, name TEXT, price INTEGER)"
+
+MakeRecord   1  5  6  _
+Integer      1  7  _  _
+
+# Insert the new record
+Insert       0  6  7  _
+
+# Close the cursor
+Close        0  _  _  _
+
+%%
+
+# No query results
+
+%%
+
+R_0 integer 1
+R_1 string "table"
+R_2 string "products"
+R_3 string "products"
+R_4 integer
+R_5 string "CREATE TABLE products(code INTEGER PRIMARY KEY, name TEXT, price INTEGER)"   
+R_6 binary
+R_7 integer 1 

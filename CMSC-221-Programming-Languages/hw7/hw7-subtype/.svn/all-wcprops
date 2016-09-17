@@ -1,0 +1,89 @@
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/aranarochel-cs221-spr-14/!svn/ver/87/hw7/hw7-subtype
+END
+labels-sig.sml
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/aranarochel-cs221-spr-14/!svn/ver/85/hw7/hw7-subtype/labels-sig.sml
+END
+labels.sml
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/aranarochel-cs221-spr-14/!svn/ver/90/hw7/hw7-subtype/labels.sml
+END
+tests.sml
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/aranarochel-cs221-spr-14/!svn/ver/95/hw7/hw7-subtype/tests.sml
+END
+sources.cm
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/aranarochel-cs221-spr-14/!svn/ver/87/hw7/hw7-subtype/sources.cm
+END
+lex-sig.sml
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/aranarochel-cs221-spr-14/!svn/ver/85/hw7/hw7-subtype/lex-sig.sml
+END
+lex.sml
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/aranarochel-cs221-spr-14/!svn/ver/85/hw7/hw7-subtype/lex.sml
+END
+parse-sig.sml
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/aranarochel-cs221-spr-14/!svn/ver/85/hw7/hw7-subtype/parse-sig.sml
+END
+parse.sml
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/aranarochel-cs221-spr-14/!svn/ver/85/hw7/hw7-subtype/parse.sml
+END
+subtype-sig.sml
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/aranarochel-cs221-spr-14/!svn/ver/94/hw7/hw7-subtype/subtype-sig.sml
+END
+subtype.sml
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/aranarochel-cs221-spr-14/!svn/ver/94/hw7/hw7-subtype/subtype.sml
+END
+ty.sml
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/aranarochel-cs221-spr-14/!svn/ver/85/hw7/hw7-subtype/ty.sml
+END
+check-sig.sml
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/aranarochel-cs221-spr-14/!svn/ver/85/hw7/hw7-subtype/check-sig.sml
+END
+check.sml
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/aranarochel-cs221-spr-14/!svn/ver/85/hw7/hw7-subtype/check.sml
+END
+token.sml
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/aranarochel-cs221-spr-14/!svn/ver/85/hw7/hw7-subtype/token.sml
+END

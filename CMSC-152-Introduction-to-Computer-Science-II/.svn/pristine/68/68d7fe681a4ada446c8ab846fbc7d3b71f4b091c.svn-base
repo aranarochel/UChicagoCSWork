@@ -1,0 +1,64 @@
+/* Jaime Arana-Rochel, aranarochel */
+/* CS152, Winter 2013 */
+/* Homework 5 */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "huff.h"
+
+huff *huff_singleton(char c, int n)
+{
+  huff *new = (huff*)malloc(sizeof(huff));
+  new->tag = LEAF;
+  new->h.leaf.c = c;
+  new->h.leaf.n = n;
+  return new;
+}
+
+int huff_weight(huff *h)
+{
+  if(h->tag == LEAF) { 
+    return h->h.leaf.n;
+  } else {
+    return h->h.node.n;
+  }
+}
+
+huff *huff_merge(huff *h1, huff *h2)
+{
+  huff *new = (huff*)malloc(sizeof(huff));
+  
+  new->tag = NODE;
+  new->h.node.n = huff_weight(h1) + huff_weight(h2);
+  new->h.node.lsub = h1;
+  new->h.node.rsub = h2;
+  
+  return new;
+}
+ 
+void huff_show(huff *h)
+{
+  if(h == NULL)
+    putchar(' ');
+  if(h->tag == LEAF) {
+    printf("  %c (%d)\n",h->h.leaf.c,huff_weight(h));
+  } else {
+    printf("%d:\n",huff_weight(h));
+    huff_show(h->h.node.lsub);
+    huff_show(h->h.node.rsub);
+  }
+}
+ 
+int main(int argc,char *argv[])
+{
+  huff *s = huff_singleton('S',6);
+  huff *e = huff_singleton('E',4);
+  huff *n = huff_singleton('N',2);
+  huff *l = huff_singleton('L',1);
+  huff *new = huff_merge(s,huff_merge(huff_merge(l,n),e));
+  huff_show(new);
+  return 0;
+}
+  
+  
+  

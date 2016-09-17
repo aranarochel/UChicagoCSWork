@@ -1,0 +1,19 @@
+TotalScore: 55/60
+
+Complexity: 20/20
+	insert: 10/10
+	fromList: 10/10
+
+---
+fromList
+Score: 15
+   fromList2 : 5 points : Pass
+   fromList1 : 10 points : Pass
+---
+---
+insert
+Score: 20
+   insert2 : 10 points : Pass
+   insert1 : 10 points : Pass
+   emptyList: 5 points : Fail (runtime error)
+---

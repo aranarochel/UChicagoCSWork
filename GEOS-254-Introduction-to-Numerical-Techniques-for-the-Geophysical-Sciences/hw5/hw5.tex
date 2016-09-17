@@ -1,0 +1,64 @@
+%Do not change 
+\documentclass[12pt, oneside]{article}
+\usepackage{amssymb,amsmath}
+\usepackage[margin=1in]{geometry}
+\usepackage{textpos}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+
+% You may add the packages you need here
+
+
+
+\begin{document}
+%Do not modify
+\begin{textblock*}{4cm}(-1.7cm,-2.3cm)
+\noindent {\scriptsize GEOS 254 Winter 2016} 
+\end{textblock*}
+
+%Do not modify other than putting your name where stated
+\begin{textblock*}{8cm}(12.5cm,-2.3cm)
+\noindent {Name: Jaime Arana-Rochel} 
+\end{textblock*}
+
+
+\vspace{1cm}
+
+\makeatletter
+\setlength{\@fptop}{0pt}
+\makeatother
+
+%Do not modify other than typing the homework number after #
+\begin{center}
+\textbf{\Large Homework \#5}
+\end{center}
+
+
+%Rest should contain your solution for the homework. Feel free to improvise in ways that you believe make grading easier.
+\subsection*{1) Integrating a Function}
+Using the recursive trapezoidal rule to within a tolerance of $\epsilon=10^{-4} $, the integral of the function is approximated as $147.413177$. To obtain this integral threshold, I had to use a value of $n=13$, which consequently meant my stepsize was $h=\frac{5}{2^{13}}\approx0.000610$.
+
+
+\subsection*{2) Simpson's Method}
+Using Simpson's method, and using the same stepsize value for $h$ as above, the calculated integral I obtained was $147.413159$. This estimate is actually reasonably close to the real answer
+\[e^5-1 \approx 147.413159102577\ldotp \]
+
+
+\subsection*{3) More Integration}
+To evaluate this integral so that the fifth decimal point is unchanging, I again used the same stepsize as above with the Simpson's method. The calculated integral using this method is $3.141592$.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}

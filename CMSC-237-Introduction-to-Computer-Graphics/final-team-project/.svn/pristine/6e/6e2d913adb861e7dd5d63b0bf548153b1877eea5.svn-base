@@ -1,0 +1,5 @@
+PROJECT-5
+
+For project 6, we will be improving upon our terrains by firstly adding a skybox to the scene. With that in place we will be able to calculate a more interesting fog coloration. We may improve upon this further by animating the skybox to have a "day" and "night" side, along with associated lighting. We would also like to incorperate some particle effects, either in the form of low hanging fog (not distance fog, elevation fog) or raid if we can find a simple algorithm to do so. If we can get that in place, we may try to animate moving fog to get the same kind of effect as one sees with the fog rolling into San Francisco Bay. 
+
+In addition or perhaps instead of additional terrain features, I'd like to implement an Animal Crossing-esque world transformation, where a large map is rendered so that it seems like things are curving off the end of the word, and appear over the horizon instead of popping in. An interseting addition to this would be an inverted version, similar to what you would see in Halo, where the terrain wraps around over the top of the viewer. In either case, we will need to sort out a way to turn 2d terrains into looping terrains. 
